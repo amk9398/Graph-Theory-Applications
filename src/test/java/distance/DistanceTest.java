@@ -1,7 +1,7 @@
 package test.java.distance;
 
 import main.java.distance.Distance;
-import main.java.graph.Graph;
+import main.java.graph.SimpleGraph;
 import main.java.utils.io.GraphReader;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,14 +10,14 @@ import test.java.TestUtils;
 public class DistanceTest {
     @Test
     public void testAllGraphs() {
-        for (Graph graph : TestUtils.getTestGraphs()) {
+        for (SimpleGraph graph : TestUtils.getTestGraphs()) {
             Distance.dijkstra(graph, 0);
         }
     }
 
     @Test
     public void testConnectedGraph() {
-        Graph connectedGraph = GraphReader.readGraphFromFile("src/data/connectedGraph.txt");
+        SimpleGraph connectedGraph = GraphReader.readSimpleGraphFromFile("src/data/connectedGraph.txt");
         Assert.assertNotNull(connectedGraph);
 
         int[] distances = Distance.dijkstra(connectedGraph, 0);
@@ -38,7 +38,7 @@ public class DistanceTest {
 
     @Test
     public void testLargeGraph() {
-        Graph largeGraph = GraphReader.readGraphFromFile("src/data/largeGraph.txt");
+        SimpleGraph largeGraph = GraphReader.readSimpleGraphFromFile("src/data/largeGraph.txt");
         Assert.assertNotNull(largeGraph);
 
         int[] distances = Distance.dijkstra(largeGraph, 0);
@@ -62,7 +62,7 @@ public class DistanceTest {
 
     @Test
     public void testMediumGraph() {
-        Graph mediumGraph = GraphReader.readGraphFromFile("src/data/mediumGraph.txt");
+        SimpleGraph mediumGraph = GraphReader.readSimpleGraphFromFile("src/data/mediumGraph.txt");
         Assert.assertNotNull(mediumGraph);
 
         int[] distances = Distance.dijkstra(mediumGraph, 0);
@@ -83,7 +83,7 @@ public class DistanceTest {
 
     @Test
     public void testSimpleGraph() {
-        Graph simpleGraph = GraphReader.readGraphFromFile("src/data/simpleGraph.txt");
+        SimpleGraph simpleGraph = GraphReader.readSimpleGraphFromFile("src/data/simpleGraph.txt");
         Assert.assertNotNull(simpleGraph);
 
         int[] distances = Distance.dijkstra(simpleGraph, 0);
@@ -101,7 +101,7 @@ public class DistanceTest {
 
     @Test
     public void testSparseGraph() {
-        Graph sparseGraph = GraphReader.readGraphFromFile("src/data/sparseGraph.txt");
+        SimpleGraph sparseGraph = GraphReader.readSimpleGraphFromFile("src/data/sparseGraph.txt");
         Assert.assertNotNull(sparseGraph);
 
         int[] distances = Distance.dijkstra(sparseGraph, 0);

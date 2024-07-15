@@ -1,7 +1,7 @@
 package main.java.utils.io;
 
-import main.java.graph.Graph;
 import main.java.graph.GraphUtils;
+import main.java.graph.SimpleGraph;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -31,12 +31,12 @@ public class GraphReader {
         return null;
     }
 
-    public static Graph readGraphFromFile(String filename) {
+    public static SimpleGraph readSimpleGraphFromFile(String filename) {
         int[][] adjacencyMatrix = GraphReader.readAdjacencyMatrixFromFile(filename);
         if (adjacencyMatrix == null) {
             return null;
         }
 
-        return GraphUtils.readAdjacencyMatrix(adjacencyMatrix);
+        return GraphUtils.readSimpleGraphFromAdjacencyMatrix(adjacencyMatrix);
     }
 }

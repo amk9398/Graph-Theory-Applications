@@ -1,7 +1,7 @@
 package test.java;
 
-import main.java.graph.Graph;
 import main.java.graph.GraphUtils;
+import main.java.graph.SimpleGraph;
 import main.java.utils.io.GraphReader;
 
 import java.util.HashSet;
@@ -17,11 +17,11 @@ public class TestUtils {
         testFiles.add("src/data/connectedGraph.txt");
     }
 
-    public static HashSet<Graph> getTestGraphs() {
-        HashSet<Graph> testGraphs = new HashSet<>();
+    public static HashSet<SimpleGraph> getTestGraphs() {
+        HashSet<SimpleGraph> testGraphs = new HashSet<>();
         for (String filename : testFiles) {
             int[][] adjacencyMatrix = GraphReader.readAdjacencyMatrixFromFile(filename);
-            Graph graph = GraphUtils.readAdjacencyMatrix(adjacencyMatrix);
+            SimpleGraph graph = GraphUtils.readSimpleGraphFromAdjacencyMatrix(adjacencyMatrix);
             testGraphs.add(graph);
         }
 

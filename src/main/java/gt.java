@@ -2,7 +2,7 @@ package main.java;
 
 import main.java.connection.Connection;
 import main.java.distance.Distance;
-import main.java.graph.Graph;
+import main.java.graph.SimpleGraph;
 import main.java.utils.io.GraphReader;
 import main.java.walk.Tour;
 
@@ -26,7 +26,7 @@ public class gt {
         String graphFile = args[0];
         String command = args[1];
 
-        Graph graph = GraphReader.readGraphFromFile(graphFile);
+        SimpleGraph graph = GraphReader.readSimpleGraphFromFile(graphFile);
         if (graph == null) {
             System.err.println("Could not read graph file.");
             return;
@@ -62,7 +62,7 @@ public class gt {
                 break;
             case "eulerian":
                 ArrayList<Integer> tour = Tour.fleury(graph);
-                output = String.valueOf(Tour.isEulerTour(graph, tour));
+                output = String.valueOf(graph.isEulerian());
                 break;
             case "mst":
                 output = String.valueOf(Connection.kruskal(graph).getEdgeList());

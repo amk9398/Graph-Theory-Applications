@@ -1,10 +1,9 @@
 package main.java.walk;
 
-import main.java.graph.Graph;
+import main.java.graph.AbstractGraph;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Stack;
 
 public class Tour {
@@ -15,13 +14,13 @@ public class Tour {
      * @param graph the input graph to find the Eulerian tour for
      * @return an ArrayList of integers representing the Eulerian tour
      */
-    public static ArrayList<Integer> fleury(Graph graph) {
+    public static ArrayList<Integer> fleury(AbstractGraph graph) {
         // create a copy of the graph to perform operations without modifying the original
-        Graph copyGraph = new Graph(graph);
+        AbstractGraph copyGraph = graph.clone();
 
         // find a starting vertex with an odd degree (if any)
         int u = 0;
-        for (int v = 0; v < copyGraph.size(); v++) {
+        for (int v = 0; v < copyGraph.order(); v++) {
             if (copyGraph.degreeOf(v) % 2 == 1) {
                 u = v;
                 break;
@@ -37,8 +36,10 @@ public class Tour {
             for (int v : neighbors) {
                 int countBefore = countReachableVertices(copyGraph, u);
                 copyGraph.removeEdge(u, v);
+                copyGraph.removeEdge(v, u);
                 int countAfter = countReachableVertices(copyGraph, v);
-                copyGraph.setEdge(u, v);
+                copyGraph.addEdge(u, v);
+                copyGraph.addEdge(v, u);
 
                 // select a non-cut edge
                 if (countBefore == countAfter) {
@@ -54,25 +55,14 @@ public class Tour {
 
             tour.add(next);
             copyGraph.removeEdge(u, next);
+            copyGraph.removeEdge(next, u);
             u = next;
         }
 
         return tour;
     }
 
-    /**
-     * Checks if the provided tour is a valid Eulerian tour for the given graph.
-     *
-     * @param graph the input graph
-     * @param tour  the tour to check
-     * @return true if the tour is a valid Eulerian tour, false otherwise
-     */
-    public static boolean isEulerTour(Graph graph, ArrayList<Integer> tour) {
-        return tour.size() - 1 == graph.getEdgeList().size()
-                && Objects.equals(tour.get(0), tour.get(tour.size() - 1));
-    }
-
-    private static int countReachableVertices(Graph graph, int u) {
+    private static int countReachableVertices(AbstractGraph graph, int u) {
         HashSet<Integer> visited = new HashSet<>();
         Stack<Integer> stack = new Stack<>();
 

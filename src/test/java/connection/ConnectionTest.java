@@ -1,8 +1,9 @@
 package test.java.connection;
 
 import main.java.connection.Connection;
+import main.java.graph.AbstractGraph;
 import main.java.graph.Edge;
-import main.java.graph.Graph;
+import main.java.graph.SimpleGraph;
 import main.java.utils.io.GraphReader;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,14 +14,14 @@ import java.util.ArrayList;
 public class ConnectionTest {
     @Test
     public void testAllGraphs() {
-        for (Graph graph : TestUtils.getTestGraphs()) {
+        for (SimpleGraph graph : TestUtils.getTestGraphs()) {
             Connection.kruskal(graph);
         }
     }
 
     @Test
     public void testConnectedGraph() {
-        Graph connectedGraph = GraphReader.readGraphFromFile("src/data/connectedGraph.txt");
+        SimpleGraph connectedGraph = GraphReader.readSimpleGraphFromFile("src/data/connectedGraph.txt");
         Assert.assertNotNull(connectedGraph);
 
         ArrayList<Edge> expected = new ArrayList<>();
@@ -37,7 +38,7 @@ public class ConnectionTest {
 
     @Test
     public void testLargeGraph() {
-        Graph largeGraph = GraphReader.readGraphFromFile("src/data/largeGraph.txt");
+        SimpleGraph largeGraph = GraphReader.readSimpleGraphFromFile("src/data/largeGraph.txt");
         Assert.assertNotNull(largeGraph);
 
         ArrayList<Edge> expected = new ArrayList<>();
@@ -55,7 +56,7 @@ public class ConnectionTest {
 
     @Test
     public void testMediumGraph() {
-        Graph mediumGraph = GraphReader.readGraphFromFile("src/data/mediumGraph.txt");
+        SimpleGraph mediumGraph = GraphReader.readSimpleGraphFromFile("src/data/mediumGraph.txt");
         Assert.assertNotNull(mediumGraph);
 
         ArrayList<Edge> expected = new ArrayList<>();
@@ -72,7 +73,7 @@ public class ConnectionTest {
 
     @Test
     public void testSimpleGraph() {
-        Graph simpleGraph = GraphReader.readGraphFromFile("src/data/simpleGraph.txt");
+        SimpleGraph simpleGraph = GraphReader.readSimpleGraphFromFile("src/data/simpleGraph.txt");
         Assert.assertNotNull(simpleGraph);
 
         ArrayList<Edge> expected = new ArrayList<>();
@@ -88,7 +89,7 @@ public class ConnectionTest {
 
     @Test
     public void testSparseGraph() {
-        Graph sparseGraph = GraphReader.readGraphFromFile("src/data/sparseGraph.txt");
+        SimpleGraph sparseGraph = GraphReader.readSimpleGraphFromFile("src/data/sparseGraph.txt");
         Assert.assertNotNull(sparseGraph);
 
         int actual = 0;

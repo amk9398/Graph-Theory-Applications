@@ -1,7 +1,8 @@
 package main.java.connection;
 
+import main.java.graph.AbstractGraph;
 import main.java.graph.Edge;
-import main.java.graph.Graph;
+import main.java.graph.SimpleGraph;
 import main.java.utils.structures.UnionFind;
 
 import java.util.ArrayList;
@@ -13,10 +14,10 @@ public class Connection {
      * @param graph the input graph for which the MST is to be found
      * @return the MST of the input graph
      */
-    public static Graph kruskal(Graph graph) {
-        Graph mst = new Graph(graph.size());
+    public static SimpleGraph kruskal(AbstractGraph graph) {
+        SimpleGraph mst = new SimpleGraph(graph.order());
 
-        ArrayList<Edge> edges = new ArrayList<>(graph.getEdgeList());
+        ArrayList<Edge> edges = graph.getEdgeList();
 
         // find edge with minimum weight
         Edge minEdge = null;
@@ -29,10 +30,10 @@ public class Connection {
         }
 
         // Union-Find structure is used to manage connected components
-        UnionFind unionFind = new UnionFind(graph.size());
+        UnionFind unionFind = new UnionFind(graph.order());
 
         while (minEdge != null) {
-            mst.setWeight(minEdge.v1, minEdge.v2, graph.weight(minEdge));
+            mst.addEdge(minEdge.v1, minEdge.v2, graph.getEdgeWeight(minEdge.v1, minEdge.v2));
             unionFind.union(minEdge.v1, minEdge.v2);
             edges.remove(minEdge);
 

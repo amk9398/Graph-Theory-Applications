@@ -1,6 +1,6 @@
 package main.java.distance;
 
-import main.java.graph.Graph;
+import main.java.graph.AbstractGraph;
 
 import java.util.HashSet;
 
@@ -13,15 +13,15 @@ public class Distance {
      * @param start the starting vertex from which to calculate the shortest path distances.
      * @return an array where the value at index {@code v} is the shortest distance from the start vertex to vertex {@code v}.
      */
-    public static int[] dijkstra(Graph graph, int start) {
+    public static int[] dijkstra(AbstractGraph graph, int start) {
         // distances[v] is the shortest know distance from start to v
-        int[] distances = new int[graph.size()];
+        int[] distances = new int[graph.order()];
 
         // holds set of unvisited vertices
         HashSet<Integer> unvisited = new HashSet<>();
 
         // initialize distances and unvisited data structures
-        for (int v = 0; v < graph.size(); v++) {
+        for (int v = 0; v < graph.order(); v++) {
             distances[v] = Integer.MAX_VALUE;
             unvisited.add(v);
         }
@@ -29,13 +29,13 @@ public class Distance {
         unvisited.remove(start);
 
         int current = start;
-        for (int i = 0; i < graph.size() - 1; i++) {
+        for (int i = 0; i < graph.order() - 1; i++) {
             int minVertex = current;
             int minDist = Integer.MAX_VALUE;
             for (int vertex : unvisited) {
                 // calculate tentative distance to vertex
                 int dist = distances[vertex];
-                int weight = graph.weight(current, vertex);
+                int weight = graph.getEdgeWeight(current, vertex);
                 if (weight > 0 && distances[current] + weight < dist) {
                     dist = distances[current] + weight;
                 }
@@ -64,7 +64,7 @@ public class Distance {
      * @param end the ending vertex to which the shortest path distance is calculated.
      * @return the shortest distance from the start vertex to the end vertex.
      */
-    public static int dijkstra(Graph graph, int start, int end) {
+    public static int dijkstra(AbstractGraph graph, int start, int end) {
         return dijkstra(graph, start)[end];
     }
 }
