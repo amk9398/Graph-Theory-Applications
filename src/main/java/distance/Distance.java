@@ -51,6 +51,13 @@ public class Distance {
             current = minVertex;
             unvisited.remove(current);
         }
+
+        // replace MAX_VALUE's with -1 to represent unreachable vertices
+        for (int i = 0; i < distances.length; i++) {
+            if (distances[i] == Integer.MAX_VALUE) {
+                distances[i] = -1;
+            }
+        }
         
         return distances;
     }

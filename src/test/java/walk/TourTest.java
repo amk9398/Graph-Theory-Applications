@@ -1,62 +1,30 @@
 package test.java.walk;
 
-import main.java.graph.SimpleGraph;
-import main.java.utils.io.GraphReader;
-import main.java.walk.Tour;
 import org.junit.Assert;
 import org.junit.Test;
-import test.java.TestUtils;
+import test.java.UnitTestClass;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
-public class TourTest {
+public class TourTest extends UnitTestClass {
     @Test
-    public void testAllGraphs() {
-        for (SimpleGraph graph : TestUtils.getTestGraphs()) {
-            Tour.fleury(graph);
-        }
-    }
-
-    @Test
-    public void testConnectedGraph() {
-        SimpleGraph connectedGraph = GraphReader.readSimpleGraphFromFile("src/data/connectedGraph.txt");
-        Assert.assertNotNull(connectedGraph);
-
-        ArrayList<Integer> tour = Tour.fleury(connectedGraph);
-        Assert.assertEquals(11, tour.size());
-    }
-
-    @Test
-    public void testLargeGraph() {
-        SimpleGraph largeGraph = GraphReader.readSimpleGraphFromFile("src/data/largeGraph.txt");
-        Assert.assertNotNull(largeGraph);
-
-        ArrayList<Integer> tour = Tour.fleury(largeGraph);
-    }
-
-    @Test
-    public void testMediumGraph() {
-        SimpleGraph mediumGraph = GraphReader.readSimpleGraphFromFile("src/data/mediumGraph.txt");
-        Assert.assertNotNull(mediumGraph);
-
-        ArrayList<Integer> tour = Tour.fleury(mediumGraph);
-        Assert.assertEquals(6, tour.size());
-    }
-
-    @Test
-    public void testSimpleGraph() {
-        SimpleGraph simpleGraph = GraphReader.readSimpleGraphFromFile("src/data/simpleGraph.txt");
-        Assert.assertNotNull(simpleGraph);
-
-        ArrayList<Integer> tour = Tour.fleury(simpleGraph);
-        Assert.assertEquals(6, tour.size());
-    }
-
-    @Test
-    public void testSparseGraph() {
-        SimpleGraph sparseGraph = GraphReader.readSimpleGraphFromFile("src/data/sparseGraph.txt");
-        Assert.assertNotNull(sparseGraph);
-
-        ArrayList<Integer> tour = Tour.fleury(sparseGraph);
+    public void testFleury() {
+        Assert.assertEquals(
+                new ArrayList<>(Arrays.asList(0, 2, 0, 3, 1, 2, 1, 3, 0)),
+                getSimpleGraph(BIPARTITE).getEulerTour()
+        );
+        Assert.assertEquals(
+                new ArrayList<>(Arrays.asList(0, 1, 0, 2, 0, 3, 0, 4, 1, 2, 1, 3, 1, 4, 2, 3, 2, 4, 3, 4, 0)),
+                getSimpleGraph(CONNECTED).getEulerTour()
+        );
+        Assert.assertEquals(
+                new ArrayList<>(Arrays.asList(0, 1, 0, 3, 2, 1, 2, 3, 0)),
+                getSimpleGraph(CYCLE).getEulerTour()
+        );
+        Assert.assertEquals(
+                new ArrayList<>(),
+                getSimpleGraph(ZERO).getEulerTour()
+        );
     }
 }

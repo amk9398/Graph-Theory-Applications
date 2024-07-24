@@ -2,7 +2,7 @@ package main.java;
 
 import main.java.connection.Connection;
 import main.java.distance.Distance;
-import main.java.graph.SimpleGraph;
+import main.java.graph.simple.SimpleGraph;
 import main.java.utils.io.GraphReader;
 import main.java.walk.Tour;
 
@@ -65,7 +65,7 @@ public class gt {
                 output = String.valueOf(graph.isEulerian());
                 break;
             case "mst":
-                output = String.valueOf(Connection.kruskal(graph).getEdgeList());
+                output = String.valueOf(Connection.kruskal(graph).getEdges());
                 break;
             case "tour":
                 output = String.valueOf(Tour.fleury(graph));

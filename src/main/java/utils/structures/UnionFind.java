@@ -1,27 +1,29 @@
 package main.java.utils.structures;
 
-import java.util.HashMap;
-
 public class UnionFind {
-    private final HashMap<Integer, Integer> vertexPointer = new HashMap<>();
+    private final int[] vertexPointers;
 
     public UnionFind(int size) {
+        vertexPointers = new int[size];
         for (int i = 0; i < size; i++) {
-            vertexPointer.put(i, null);
+            vertexPointers[i] = i;
         }
+    }
+
+    public boolean connected(int v1, int v2) {
+        return find(v1) == find(v2);
     }
 
     public int find(int vertex) {
-        Integer dst = vertexPointer.get(vertex);
-        if (dst == null) {
+        if (vertex == vertexPointers[vertex]) {
             return vertex;
         }
 
-        return find(dst);
+        vertexPointers[vertex] = find(vertexPointers[vertex]);
+        return vertexPointers[vertex];
     }
 
-    public void union(int comp1, int comp2) {
-        int target = find(comp1);
-        vertexPointer.put(target, comp2);
+    public void union(int v1, int v2) {
+        vertexPointers[find(v1)] = v2;
     }
 }

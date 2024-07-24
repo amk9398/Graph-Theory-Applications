@@ -15,6 +15,10 @@ public class Tour {
      * @return an ArrayList of integers representing the Eulerian tour
      */
     public static ArrayList<Integer> fleury(AbstractGraph graph) {
+        if (graph.order() == 0) {
+            return new ArrayList<>();
+        }
+
         // create a copy of the graph to perform operations without modifying the original
         AbstractGraph copyGraph = graph.clone();
 
@@ -36,10 +40,8 @@ public class Tour {
             for (int v : neighbors) {
                 int countBefore = countReachableVertices(copyGraph, u);
                 copyGraph.removeEdge(u, v);
-                copyGraph.removeEdge(v, u);
                 int countAfter = countReachableVertices(copyGraph, v);
                 copyGraph.addEdge(u, v);
-                copyGraph.addEdge(v, u);
 
                 // select a non-cut edge
                 if (countBefore == countAfter) {
@@ -55,7 +57,6 @@ public class Tour {
 
             tour.add(next);
             copyGraph.removeEdge(u, next);
-            copyGraph.removeEdge(next, u);
             u = next;
         }
 
