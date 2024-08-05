@@ -70,17 +70,32 @@ public class SimpleGraph extends AbstractGraph {
 
     @Override
     public AbstractGraph complement() {
-        SimpleGraph simpleGraph = new SimpleGraph(order());
+        AbstractGraph graph = newGraph(order());
 
         for (int i = 0; i < order(); i++) {
             for (int j = 0; j < order(); j++) {
                 if (i != j && getEdgeWeight(i, j) == 0) {
-                    simpleGraph.addEdge(i, j);
+                    graph.addEdge(i, j);
                 }
             }
         }
 
-        return simpleGraph;
+        return graph;
+    }
+
+    @Override
+    public void contract(int v1, int v2) {
+        for (Edge edge : new ArrayList<>(edges)) {
+            if (edge.v1 == v1) {
+                int weight = getEdgeWeight(v2, edge.v2);
+                addEdge(v2, edge.v2, edge.weight + weight);
+            } else if (edge.v2 == v1) {
+                int weight = getEdgeWeight(edge.v1, v2);
+                addEdge(edge.v1, v2, edge.weight + weight);
+            }
+        }
+
+        removeVertex(v1);
     }
 
     @Override
@@ -90,6 +105,25 @@ public class SimpleGraph extends AbstractGraph {
         }
 
         return degreeMap.get(v);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof SimpleGraph that) {
+            if (!that.isSimple()
+                    || order() != that.order()
+                    || size() != that.size()
+                    || isDirected() != that.isDirected()) {
+                return false;
+            }
+
+            return Arrays.deepEquals(adjacencyMatrix, that.getAdjacencyMatrix());
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -108,14 +142,22 @@ public class SimpleGraph extends AbstractGraph {
             }
         }
 
-        SimpleGraph edgeInducedSubgraph = new SimpleGraph(vertices.size());
-        for (Edge edge : edges) {
-            if (hasEdge(edge)) {
-                edgeInducedSubgraph.addEdge(edge);
+        HashMap<Integer, Integer> vertexMap = new HashMap<>();
+        int count = 0;
+        for (int v = 0; v < order(); v++) {
+            if (vertices.contains(v)) {
+                vertexMap.put(v, count++);
             }
         }
 
-        return edgeInducedSubgraph;
+        AbstractGraph graph = newGraph(vertexMap.size());
+        for (Edge edge : edges) {
+            if (hasEdge(edge)) {
+                graph.addEdge(vertexMap.get(edge.v1), vertexMap.get(edge.v2), edge.weight);
+            }
+        }
+
+        return graph;
     }
 
     @Override
@@ -133,6 +175,11 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
+    public AbstractGraph getUnderlyingSimpleSubgraph() {
+        return this;
+    }
+
+    @Override
     public AbstractGraph getVertexInducedSubgraph(Set<Integer> vertices) {
         HashMap<Integer, Integer> vertexMap = new HashMap<>();
         int vertexCount = 0;
@@ -143,7 +190,7 @@ public class SimpleGraph extends AbstractGraph {
             }
         }
 
-        SimpleGraph vertexInducedSubgraph = new SimpleGraph(vertexCount);
+        AbstractGraph vertexInducedSubgraph = newGraph(vertexCount);
         for (Integer v : vertices) {
             if (!isValidVertex(v)) {
                 continue;
@@ -167,6 +214,20 @@ public class SimpleGraph extends AbstractGraph {
         }
 
         return getEdgeWeight(v1, v2) != 0;
+    }
+
+    @Override
+    public AbstractGraph intersect(AbstractGraph graph) {
+        int newOrder = Math.min(order(), graph.order());
+       AbstractGraph newGraph = newGraph(newOrder);
+
+       for (Edge edge : edges) {
+           if (graph.hasEdge(edge)) {
+               newGraph.addEdge(edge);
+           }
+       }
+
+        return newGraph;
     }
 
     @Override
@@ -216,6 +277,17 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
+    public boolean isEdgeDisjoint(AbstractGraph graph) {
+        for (Edge edge : graph.getEdges()) {
+            if (edges.contains(edge)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
     public boolean isEmpty() {
         return edges.isEmpty();
     }
@@ -232,20 +304,13 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
-    public boolean isIdentical(AbstractGraph graph) {
-        if (!graph.isSimple()
-                || order() != graph.order()
-                || size() != graph.size()
-                || isDirected() != graph.isDirected()) {
-            return false;
-        }
-
-        return Arrays.deepEquals(adjacencyMatrix, graph.getAdjacencyMatrix());
+    public boolean isSimple() {
+        return true;
     }
 
     @Override
-    public boolean isSimple() {
-        return true;
+    public boolean isSubgraphOf(AbstractGraph graph) {
+        return isStrictSubgraphOf(graph);
     }
 
     @Override
@@ -310,7 +375,7 @@ public class SimpleGraph extends AbstractGraph {
             return 0;
         }
 
-        return Connection.kosaraju(this);
+        return Connection.kosaraju(this).size();
     }
 
     @Override
@@ -352,20 +417,49 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
-    public void reverse() {
-        ArrayList<Edge> edgeList = new ArrayList<>(edges);
-
-        for (Edge edge : edgeList) {
-            if (!hasEdge(edge.v2, edge.v1)) {
-                removeEdge(edge);
-                addEdge(edge.v2, edge.v1, edge.weight);
-            }
-        }
+    public int size() {
+        return edges.size();
     }
 
     @Override
-    public int size() {
-        return edges.size();
+    public AbstractGraph transpose() {
+        AbstractGraph graph = newGraph(order());
+
+        for (Edge edge : edges) {
+            graph.addEdge(edge.getReverse());
+        }
+
+        return graph;
+    }
+
+    @Override
+    public AbstractGraph union(AbstractGraph graph) {
+        HashSet<Edge> unionEdges = new HashSet<>();
+        HashSet<Integer> unionVertices = new HashSet<>();
+
+        for (Edge edge : edges) {
+            unionEdges.add(edge);
+            unionVertices.add(edge.v1);
+            unionVertices.add(edge.v2);
+        }
+        for (Edge edge : graph.getEdges()) {
+            unionEdges.add(edge);
+            unionVertices.add(edge.v1);
+            unionVertices.add(edge.v2);
+        }
+
+        AbstractGraph newGraph = newGraph(unionVertices.size());
+
+        for (Edge edge : unionEdges) {
+            newGraph.addEdge(edge);
+        }
+
+        return newGraph;
+    }
+
+    @Override
+    protected AbstractGraph newGraph(int order) {
+        return new SimpleGraph(order);
     }
 
     @Override
@@ -382,6 +476,12 @@ public class SimpleGraph extends AbstractGraph {
         return sb.toString();
     }
 
+    /**
+     * Converts this graph to a specified type.
+     *
+     * @param type The type of graph to convert to. Can be "SIMPLE_GRAPH" or "UNDIRECTED_GRAPH".
+     * @return A new graph of the specified type. If the type is invalid, returns null.
+     */
     public SimpleGraph as(String type) {
         SimpleGraph graph;
 
@@ -397,6 +497,35 @@ public class SimpleGraph extends AbstractGraph {
         }
 
         return graph;
+    }
+
+    public static boolean equals(SimpleGraph graph1, SimpleGraph graph2) {
+        if (graph1 == graph2) {
+            return true;
+        }
+
+        if (graph1 == null || graph2 == null) {
+            return false;
+        }
+
+        return graph1.equals(graph2);
+    }
+
+    /**
+     * Checks if this graph is a strict subgraph of another graph by checking if all edges
+     * in this graph are in the supergraph.
+     *
+     * @param graph The graph to compare against.
+     * @return True if this graph is a strict subgraph of the specified graph, false otherwise.
+     */
+    public boolean isStrictSubgraphOf(AbstractGraph graph) {
+        for (Edge edge : edges) {
+            if (!graph.hasEdge(edge)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected boolean isValidEdge(Edge edge) {

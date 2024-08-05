@@ -39,7 +39,26 @@ public class Edge {
         return "(" + v1 + ", " + v2 + ")";
     }
 
+    /**
+     * Returns a new edge that is the reverse of the current edge.
+     * The reverse edge will have the same weight, but its vertices will be swapped.
+     */
     public Edge getReverse() {
-        return new Edge(v1, v1, weight);
+        return new Edge(v2, v1, weight);
     }
+
+    /**
+     * Checks if this edge is a link (i.e., it connects two different vertices).
+     */
+    public boolean isLink() {
+        return v1 != v2;
+    }
+
+    /**
+     * Checks if this edge is a loop (i.e., it connects a vertex to itself).
+     */
+    public boolean isLoop() {
+        return v1 == v2;
+    }
+
 }

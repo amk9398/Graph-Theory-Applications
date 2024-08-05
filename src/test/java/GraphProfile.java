@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class GraphProfile {
+    public int center;
     public boolean complete;
     public int[] degrees;
     public int[] dfsPath;
@@ -21,6 +22,7 @@ public class GraphProfile {
     public int maxDegree;
     public int minDegree;
     public int mstWeight;
+    public int numSpanningTrees;
     public int numStrongComponents;
     public int numWeakComponents;
     public int order;
@@ -40,26 +42,28 @@ public class GraphProfile {
                 GraphProfile profile = new GraphProfile();
                 String[] rowValues = line.split(", ");
                 profile.filename = rowValues[0];
-                profile.complete = Boolean.parseBoolean(rowValues[1]);
-                profile.degrees = parseIntArray(rowValues[2]);
-                profile.dfsPath = parseIntArray(rowValues[3]);
-                profile.directedCutEdges = parseEdgeSet(rowValues[4]);
-                profile.directedCutVertices = parseIntSet(rowValues[5]);
-                profile.directedCyclic = Boolean.parseBoolean(rowValues[6]);
-                profile.empty = Boolean.parseBoolean(rowValues[7]);
-                profile.eulerian = Boolean.parseBoolean(rowValues[8]);
-                profile.maxDegree = Integer.parseInt(rowValues[9]);
-                profile.minDegree = Integer.parseInt(rowValues[10]);
-                profile.mstWeight =Integer.parseInt(rowValues[11]);
-                profile.numStrongComponents = Integer.parseInt(rowValues[12]);
-                profile.numWeakComponents = Integer.parseInt(rowValues[13]);
-                profile.order = Integer.parseInt(rowValues[14]);
-                profile.size = Integer.parseInt(rowValues[15]);
-                profile.undirectedCutEdges = parseEdgeSet(rowValues[16]);
-                profile.undirectedCutVertices = parseIntSet(rowValues[17]);
-                profile.undirectedCyclic = Boolean.parseBoolean(rowValues[18]);
-                profile.unweightedDistance = parseIntArray(rowValues[19]);
-                profile.weightedDistance = parseIntArray(rowValues[20]);
+                profile.center = Integer.parseInt(rowValues[1]);
+                profile.complete = Boolean.parseBoolean(rowValues[2]);
+                profile.degrees = parseIntArray(rowValues[3]);
+                profile.dfsPath = parseIntArray(rowValues[4]);
+                profile.directedCutEdges = parseEdgeSet(rowValues[5]);
+                profile.directedCutVertices = parseIntSet(rowValues[6]);
+                profile.directedCyclic = Boolean.parseBoolean(rowValues[7]);
+                profile.empty = Boolean.parseBoolean(rowValues[8]);
+                profile.eulerian = Boolean.parseBoolean(rowValues[9]);
+                profile.maxDegree = Integer.parseInt(rowValues[10]);
+                profile.minDegree = Integer.parseInt(rowValues[11]);
+                profile.mstWeight = Integer.parseInt(rowValues[12]);
+                profile.numSpanningTrees = Integer.parseInt(rowValues[13]);
+                profile.numStrongComponents = Integer.parseInt(rowValues[14]);
+                profile.numWeakComponents = Integer.parseInt(rowValues[15]);
+                profile.order = Integer.parseInt(rowValues[16]);
+                profile.size = Integer.parseInt(rowValues[17]);
+                profile.undirectedCutEdges = parseEdgeSet(rowValues[18]);
+                profile.undirectedCutVertices = parseIntSet(rowValues[19]);
+                profile.undirectedCyclic = Boolean.parseBoolean(rowValues[20]);
+                profile.unweightedDistance = parseIntArray(rowValues[21]);
+                profile.weightedDistance = parseIntArray(rowValues[22]);
                 profiles.put(profile.filename, profile);
             }
         } catch (IOException e) {

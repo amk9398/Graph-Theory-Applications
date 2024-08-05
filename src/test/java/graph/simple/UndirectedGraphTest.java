@@ -1,5 +1,6 @@
 package test.java.graph.simple;
 
+import main.java.graph.AbstractGraph;
 import main.java.graph.Edge;
 import main.java.graph.simple.SimpleGraph;
 import main.java.graph.simple.UndirectedGraph;
@@ -16,6 +17,19 @@ public class UndirectedGraphTest extends UnitTestClass {
         testAddEdge(graph, new Edge(-1, 1), false);
         testAddEdge(graph, new Edge(0, 1), true);
         testAddEdge(graph, new Edge(0, 1), false);
+    }
+
+    @Test
+    public void testCotree() {
+        test(name -> {
+            if (getProfile(name).mstWeight == -1) {
+                return;
+            }
+
+            AbstractGraph cotree = getUndirectedGraph(name).cotree();
+            Assert.assertNotNull(cotree);
+            Assert.assertTrue(getUndirectedGraph(name).isCotreeOf(cotree));
+        }, "AbstractGraphTest.testCotree");
     }
 
     @Test
@@ -61,7 +75,7 @@ public class UndirectedGraphTest extends UnitTestClass {
 
         graph.addEdge(edge);
         Assert.assertEquals(assertChanged ? edge.weight : weightBefore, graph.getEdgeWeight(edge));
-        Assert.assertEquals(weightBeforeR, graph.getEdgeWeight(edge.getReverse()));
+        Assert.assertEquals(assertChanged ? edge.weight : weightBeforeR, graph.getEdgeWeight(edge.getReverse()));
     }
 
     private void testRemoveEdge(SimpleGraph graph, Edge edge, boolean assertChanged) {
@@ -70,6 +84,6 @@ public class UndirectedGraphTest extends UnitTestClass {
 
         graph.removeEdge(edge);
         Assert.assertEquals(assertChanged ? 0 : weightBefore, graph.getEdgeWeight(edge));
-        Assert.assertEquals(weightBeforeR, graph.getEdgeWeight(edge.getReverse()));
+        Assert.assertEquals(assertChanged ? 0 : weightBeforeR, graph.getEdgeWeight(edge.getReverse()));
     }
 }

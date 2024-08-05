@@ -1,5 +1,7 @@
 package main.java.graph.simple;
 
+import main.java.connection.Connection;
+import main.java.graph.AbstractGraph;
 import main.java.graph.Edge;
 
 import java.util.HashSet;
@@ -24,7 +26,6 @@ public class UndirectedGraph extends SimpleGraph {
         degreeMap.put(v1, degreeOf(v1) + 1);
         degreeMap.put(v2, degreeOf(v2) + 1);
         edges.add(new Edge(v1, v2, weight));
-        edges.add(new Edge(v2, v1, weight));
         neighborMap.get(v1).add(v2);
         neighborMap.get(v2).add(v1);
     }
@@ -65,6 +66,11 @@ public class UndirectedGraph extends SimpleGraph {
     }
 
     @Override
+    public AbstractGraph newGraph(int order) {
+        return new UndirectedGraph(order);
+    }
+
+    @Override
     public int numComponents() {
         int numComponents = 0;
         HashSet<Integer> visited = new HashSet<>();
@@ -96,8 +102,74 @@ public class UndirectedGraph extends SimpleGraph {
     }
 
     @Override
-    public int size() {
-        return super.size() / 2;
+    public void removeVertex(int v) {
+        if (order() == 0) {
+            return;
+        }
+
+        UndirectedGraph undirectedGraph = new UndirectedGraph(order() - 1);
+        for (Edge edge : getEdges()) {
+            if (edge.v1 != v && edge.v2 != v) {
+                int i0 = edge.v1 < v ? edge.v1 : edge.v1 - 1;
+                int j0 = edge.v2 < v ? edge.v2 : edge.v2 - 1;
+                undirectedGraph.addEdge(i0, j0, getEdgeWeight(edge));
+            }
+        }
+
+        adjacencyMatrix = undirectedGraph.adjacencyMatrix;
+        degreeMap = undirectedGraph.degreeMap;
+        edges = undirectedGraph.edges;
+        neighborMap = undirectedGraph.neighborMap;
+    }
+
+    @Override
+    public AbstractGraph transpose() {
+        return clone();
+    }
+
+    /**
+     * Returns a cotree of the graph. A cotree is the complement of a valid MST.
+     *
+     * @return The cotree of the graph as an AbstractGraph, or null if the MST is null.
+     */
+    public AbstractGraph cotree() {
+        AbstractGraph mst = mst();
+        return mst == null ? null : mst.complement();
+    }
+
+    /**
+     * Checks if this given graph is a cotree of the given graph.
+     *
+     * @param graph The graph to check.
+     * @return True if the given graph is a cotree of this graph, false otherwise.
+     */
+    public boolean isCotreeOf(AbstractGraph graph) {
+        AbstractGraph complement = graph.complement();
+        return complement.isTree() && complement.order() == order();
+    }
+
+    /**
+     * Returns the minimum spanning tree (MST) of the graph.
+     *
+     * @return The MST as a SimpleGraph, or null if there is no valid MST.
+     */
+    public UndirectedGraph mst() {
+        UndirectedGraph mst = Connection.kruskal(this);
+
+        if (mst.size() != mst.order() - 1) {
+            return null;
+        }
+
+        return mst;
+    }
+
+    /**
+     * Calculates the number of spanning trees in the graph using Kirchhoff's algorithm.
+     *
+     * @return The number of spanning trees in the graph.
+     */
+    public int numSpanningTrees() {
+        return Connection.kirchhoff(this);
     }
 
     private boolean isCyclicH(int v, int parent, HashSet<Integer> visited) {

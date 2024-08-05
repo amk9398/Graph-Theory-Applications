@@ -9,6 +9,7 @@ import org.junit.Test;
 import test.java.UnitTestClass;
 
 import java.util.HashSet;
+import java.util.Objects;
 
 public class SimpleGraphTest extends UnitTestClass {
     @Test
@@ -58,7 +59,23 @@ public class SimpleGraphTest extends UnitTestClass {
                 {1, 0, 0, 0}
         };
         SimpleGraph complement = GraphReader.readSimpleGraphFromAdjacencyMatrix(complementAdjMatrix);
-        Assert.assertTrue(getSimpleGraph(SIMPLE).complement().isIdentical(complement));
+        Assert.assertEquals(getSimpleGraph(SIMPLE).complement(), complement);
+    }
+
+    @Test
+    public void testContract() {
+        SimpleGraph emptyGraph = getSimpleGraph(EMPTY).clone();
+        emptyGraph.contract(0, 1);
+        Assert.assertEquals(2, emptyGraph.order());
+        Assert.assertTrue(emptyGraph.isEmpty());
+
+        SimpleGraph simpleGraph = getSimpleGraph(SIMPLE).clone();
+        simpleGraph.contract(0, 3);
+        Assert.assertTrue(simpleGraph.isComplete());
+
+        SimpleGraph singleEdgeGraph = getSimpleGraph(SINGLE_EDGE).clone();
+        singleEdgeGraph.contract(0, 1);
+        Assert.assertTrue(singleEdgeGraph.isEmpty());
     }
 
     @Test
@@ -111,6 +128,15 @@ public class SimpleGraphTest extends UnitTestClass {
     }
 
     @Test
+    public void testIntersect() {
+        AbstractGraph intersection = getSimpleGraph(SIMPLE).intersect(getSimpleGraph(SINGLE_EDGE));
+        Assert.assertEquals(intersection, getSimpleGraph(SINGLE_EDGE));
+
+        intersection = getSimpleGraph(COMPLETE).intersect(getSimpleGraph(ZERO));
+        Assert.assertEquals(intersection, getSimpleGraph(ZERO));
+    }
+
+    @Test
     public void testIsComplete() {
         test(name -> Assert.assertEquals(getProfile(name).complete, getSimpleGraph(name).isComplete()),
                 "SimpleGraphTest.testIsComplete");
@@ -143,6 +169,26 @@ public class SimpleGraphTest extends UnitTestClass {
     }
 
     @Test
+    public void testIsEdgeDisjoint() {
+        SimpleGraph graph1 = new SimpleGraph(4);
+        graph1.addEdge(0, 1);
+        graph1.addEdge(0, 2);
+        graph1.addEdge(0, 3);
+
+        SimpleGraph graph2 = new SimpleGraph(4);
+        graph2.addEdge(1, 2);
+        graph2.addEdge(1, 3);
+        graph2.addEdge(2, 3);
+
+        Assert.assertTrue(graph1.isEdgeDisjoint(graph2));
+        Assert.assertTrue(graph2.isEdgeDisjoint(graph1));
+
+        graph1.addEdge(1, 2);
+        Assert.assertFalse(graph1.isEdgeDisjoint(graph2));
+        Assert.assertFalse(graph2.isEdgeDisjoint(graph1));
+    }
+
+    @Test
     public void testIsEmpty() {
         test(name -> Assert.assertEquals(getProfile(name).empty, getSimpleGraph(name).isEmpty()),
                 "SimpleGraphTest.testIsEmpty");
@@ -158,7 +204,7 @@ public class SimpleGraphTest extends UnitTestClass {
     public void testIsIdentical() {
         for (String name : getTestGraphs()) {
             SimpleGraph graph = getSimpleGraph(name);
-            Assert.assertTrue(graph.isIdentical(graph.clone()));
+            Assert.assertEquals(graph, graph.clone());
         }
     }
 
@@ -212,22 +258,57 @@ public class SimpleGraphTest extends UnitTestClass {
     }
 
     @Test
-    public void testReverse() {
+    public void testSize() {
+        test(name -> Assert.assertEquals(getProfile(name).size, getSimpleGraph(name).size()),
+                "SimpleGraphTest.testSize");
+    }
+
+    @Test
+    public void testTranspose() {
         SimpleGraph directedTree = getSimpleGraph(DIRECTED_TREE);
-        SimpleGraph dtClone = directedTree.clone();
-        dtClone.reverse();
+        AbstractGraph transpose = directedTree.clone().transpose();
 
         for (int i = 0; i < directedTree.order(); i++) {
             for (int j = 0; j < directedTree.order(); j++) {
-                Assert.assertEquals(directedTree.getAdjacencyMatrix()[i][j], dtClone.getAdjacencyMatrix()[j][i]);
+                Assert.assertEquals(directedTree.getAdjacencyMatrix()[i][j], transpose.getAdjacencyMatrix()[j][i]);
             }
         }
     }
 
     @Test
-    public void testSize() {
-        test(name -> Assert.assertEquals(getProfile(name).size, getSimpleGraph(name).size()),
-                "SimpleGraphTest.testSize");
+    public void testUnion() {
+        SimpleGraph graph = getSimpleGraph(SIMPLE);
+        Assert.assertEquals(graph, graph.union(graph));
+        Assert.assertEquals(graph, graph.union(getSimpleGraph(EMPTY)));
+        Assert.assertEquals(6, getSimpleGraph(DIRECTED_TREE).union(getSimpleGraph(DIRECTED_PATH)).size());
+    }
+
+    @Test
+    public void testIsStrictSubgraphOf() {
+        test(name -> {
+            SimpleGraph graph = getSimpleGraph(name);
+            SimpleGraph subgraph = new SimpleGraph(graph.order());
+            int count = 0;
+
+            for (Edge edge : graph.getEdges()) {
+                subgraph.addEdge(edge);
+                if (count++ < graph.size()) {
+                    break;
+                }
+            }
+
+            Assert.assertTrue(subgraph.isSpanningSubgraphOf(graph));
+        }, "testIsStrictSubgraphOf");
+    }
+
+    private AbstractGraph scaleGraphEdgesTo1(AbstractGraph graph) {
+        AbstractGraph scaledGraph = graph.clone();
+
+        for (Edge edge : scaledGraph.getEdges()) {
+            edge.weight = 1;
+        }
+
+        return scaledGraph;
     }
 
     private void testAddEdge(SimpleGraph graph, Edge edge, boolean assertChanged) {

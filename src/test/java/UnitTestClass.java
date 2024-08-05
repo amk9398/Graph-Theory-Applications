@@ -10,25 +10,27 @@ import java.util.HashMap;
 import java.util.Set;
 
 public class UnitTestClass {
-    protected static final String BIPARTITE = "bipartite_graph";
-    protected static final String COMPLETE = "complete_graph";
-    protected static final String CONNECTED = "connected_graph";
-    protected static final String CYCLE = "cycle_graph";
-    protected static final String DIRECTED_PATH = "directed_path";
-    protected static final String DIRECTED_TREE = "directed_tree";
-    protected static final String DISCONNECTED = "disconnected_graph";
-    protected static final String EMPTY = "empty_graph";
-    protected static final String LARGE = "large_graph";
-    protected static final String MEDIUM = "medium_graph";
-    protected static final String PATH = "path_graph";
-    protected static final String SIMPLE = "simple_graph";
-    protected static final String SINGLE_EDGE = "single_edge_graph";
-    protected static final String SPARSE = "sparse_graph";
-    protected static final String STAR = "star_graph";
-    protected static final String TREE = "tree_graph";
-    protected static final String ZERO = "zero_graph";
+    public static final String BIPARTITE = "bipartite_graph";
+    public static final String COMPLETE = "complete_graph";
+    public static final String CONNECTED = "connected_graph";
+    public static final String CYCLE = "cycle_graph";
+    public static final String DIRECTED_PATH = "directed_path";
+    public static final String DIRECTED_TREE = "directed_tree";
+    public static final String DISCONNECTED = "disconnected_graph";
+    public static final String EMPTY = "empty_graph";
+    public static final String LARGE = "large_graph";
+    public static final String MEDIUM = "medium_graph";
+    public static final String PATH = "path_graph";
+    public static final String SIMPLE = "simple_graph";
+    public static final String SINGLE_EDGE = "single_edge_graph";
+    public static final String SPARSE = "sparse_graph";
+    public static final String STAR = "star_graph";
+    public static final String TREE = "tree_graph";
+    public static final String ZERO = "zero_graph";
     private static final String GRAPH_PATH = "src/data/graphs/";
     private static final String TXT = ".txt";
+
+    protected static String TEST_CLASS;
 
     private static final HashMap<String, SimpleGraph> graphs = new HashMap<>();
     private static HashMap<String, GraphProfile> profiles;
@@ -59,6 +61,10 @@ public class UnitTestClass {
         graphs.put(ZERO, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + ZERO + TXT));
     }
 
+    public UnitTestClass() {
+        TEST_CLASS = getClass().getSimpleName();
+    }
+
     protected static SimpleGraph getSimpleGraph(String name) {
         return graphs.get(name);
     }
@@ -75,12 +81,18 @@ public class UnitTestClass {
         return (UndirectedGraph) getSimpleGraph(name).as(SimpleGraph.UNDIRECTED_GRAPH);
     }
 
-    protected static void test(Assertion assertion, String testName) {
+    protected static void test(Assertion assertion, String method) {
         for (String name : graphs.keySet()) {
+            String testName = TEST_CLASS + "." + method;
+            Log.d("Testing " + getProfile(name).filename + " on " + testName);
+
             try {
                 assertion.check(name);
             } catch (AssertionError e) {
                 Log.w("Failed " + testName + " on " + getProfile(name).filename);
+                throw e;
+            } catch (Exception e) {
+                Log.e("Failed " + testName + " on " + getProfile(name).filename);
                 throw e;
             }
         }

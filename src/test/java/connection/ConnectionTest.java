@@ -1,12 +1,18 @@
 package test.java.connection;
 
 import main.java.graph.Edge;
-import main.java.graph.simple.SimpleGraph;
+import main.java.graph.simple.UndirectedGraph;
 import org.junit.Assert;
 import org.junit.Test;
 import test.java.UnitTestClass;
 
 public class ConnectionTest extends UnitTestClass {
+    @Test
+    public void testKirchhoff() {
+        test(name -> Assert.assertEquals(getProfile(name).numSpanningTrees, getUndirectedGraph(name).numSpanningTrees()),
+                "ConnectionTest.testKirchhoff");
+    }
+
     @Test
     public void testKosaraju() {
         test(name -> Assert.assertEquals(getProfile(name).numStrongComponents, getSimpleGraph(name).numComponents()),
@@ -17,7 +23,7 @@ public class ConnectionTest extends UnitTestClass {
     public void testKruskal() {
         test(name -> {
             int expected = getProfile(name).mstWeight;
-            SimpleGraph mst = getSimpleGraph(name).mst();
+            UndirectedGraph mst = getUndirectedGraph(name).mst();
             if (expected == -1) {
                 Assert.assertNull(mst);
             } else {

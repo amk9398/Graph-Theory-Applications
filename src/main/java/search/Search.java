@@ -15,16 +15,14 @@ public class Search {
      * @return An ArrayList of integers representing the path from v1 to v2, or null if no path is found.
      */
     public static ArrayList<Integer> bfs(AbstractGraph graph, Integer v1, Integer v2) {
-        // stores the predecessor of each node to reconstruct the path later
         HashMap<Integer, Integer> predecessorMap = new HashMap<>();
-
         HashSet<Integer> visited = new HashSet<>();
         ArrayList<Integer> vertexQueue = new ArrayList<>();
-        vertexQueue.add(v1);
 
+        vertexQueue.add(v1);
         int v = -1;
+
         while (!vertexQueue.isEmpty()) {
-            // dequeue the front node
             v = vertexQueue.remove(0);
             if (Objects.equals(v, v2)) {
                 break;
@@ -43,12 +41,10 @@ public class Search {
             }
         }
 
-        // no path found
         if (v != v2) {
             return null;
         }
 
-        // reconstruct the path from v2 to v1 using the predecessor map
         ArrayList<Integer> path = new ArrayList<>();
         Integer prev = v2;
         while (!Objects.equals(prev, v1)) {
@@ -126,7 +122,6 @@ public class Search {
             }
         }
 
-        // no path found
         path.remove(path.size() - 1);
         return new ArrayList<>();
     }

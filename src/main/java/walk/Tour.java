@@ -19,10 +19,8 @@ public class Tour {
             return new ArrayList<>();
         }
 
-        // create a copy of the graph to perform operations without modifying the original
         AbstractGraph copyGraph = graph.clone();
 
-        // find a starting vertex with an odd degree (if any)
         int u = 0;
         for (int v = 0; v < copyGraph.order(); v++) {
             if (copyGraph.degreeOf(v) % 2 == 1) {
@@ -43,14 +41,12 @@ public class Tour {
                 int countAfter = countReachableVertices(copyGraph, v);
                 copyGraph.addEdge(u, v);
 
-                // select a non-cut edge
                 if (countBefore == countAfter) {
                     next = v;
                     break;
                 }
             }
 
-            // if no non-cut edge is found, select next available edge
             if (next == -1) {
                 next = neighbors.get(0);
             }
