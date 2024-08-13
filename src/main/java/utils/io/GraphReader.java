@@ -1,72 +1,80 @@
 package main.java.utils.io;
 
-import main.java.graph.simple.SimpleGraph;
+import main.java.graph.Graph;
+import main.java.graph.GraphType;
+import main.java.utils.Log;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Optional;
 
 public class GraphReader {
-    /**
-     * Reads an adjacency matrix from a file.
-     *
-     * @param filename the name of the file containing the adjacency matrix
-     * @return a 2D array representing the adjacency matrix, or null if an error occurs
-     */
-    public static int[][] readAdjacencyMatrixFromFile(String filename) {
+    public static Optional<Graph> read(String filename) {
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line = br.readLine();
-            int size = Integer.parseInt(line);
-            int[][] adjacencyMatrix = new int[size][size];
+            if (!isValidHeader(line)) {
+                Log.w("Graph file header is invalid");
+                return Optional.empty();
+            }
 
-            int i = 0;
+            Optional<FileType> optionalFileType = getFileTypeFromHeader(line);
+            if (optionalFileType.isEmpty()) {
+                Log.w("Unrecognized graph file type");
+                return Optional.empty();
+            }
+
+            FileType fileType = optionalFileType.get();
+            GraphType graphType = getGraphTypeFromHeader(line);
+
+            ArrayList<String> lines = new ArrayList<>();
             while ((line = br.readLine()) != null) {
-                String[] split = line.split(",");
-                for (int j = 0; j < size; j++) {
-                    adjacencyMatrix[i][j] = Integer.parseInt(split[j].replaceAll("\\s+", ""));
-                }
-                i++;
+                lines.add(line);
             }
 
-            return adjacencyMatrix;
-        } catch (IOException ignored) {
-            System.err.println("File '" + filename + "' not found.");
+            return fileType.read(lines.toArray(new String[0]), graphType);
+        } catch (IOException e) {
+            Log.e("Invalid file location: '" + filename + "'");
         }
 
-        return null;
+        return Optional.empty();
     }
 
-    /**
-     * Creates a SimpleGraph from an adjacency matrix.
-     *
-     * @param adjacencyMatrix the adjacency matrix representing the graph
-     * @return a SimpleGraph created from the adjacency matrix
-     */
-    public static SimpleGraph readSimpleGraphFromAdjacencyMatrix(int[][] adjacencyMatrix) {
-        int size = adjacencyMatrix.length;
-        SimpleGraph graph = new SimpleGraph(size);
+    private static boolean areValidHeaderFields(String[] headerFields) {
+        if (headerFields == null || headerFields.length == 0) {
+            return false;
+        }
 
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                graph.addEdge(i, j, adjacencyMatrix[i][j]);
+        for (String field : headerFields) {
+            if (!field.startsWith("!")) {
+                return false;
             }
         }
 
-        return graph;
+        return true;
     }
 
-    /**
-     * Reads a SimpleGraph from a file containing an adjacency matrix.
-     *
-     * @param filename the name of the file containing the adjacency matrix
-     * @return a SimpleGraph created from the file's adjacency matrix, or null if an error occurs
-     */
-    public static SimpleGraph readSimpleGraphFromFile(String filename) {
-        int[][] adjacencyMatrix = GraphReader.readAdjacencyMatrixFromFile(filename);
+    private static Optional<FileType> getFileTypeFromHeader(String header) {
+        return FileType.fromString(header.split(" ")[0].replace("!", ""));
+    }
 
-        if (adjacencyMatrix == null) {
-            return null;
+    private static GraphType getGraphTypeFromHeader(String header) {
+        String[] headerString = header.split(" ");
+
+        if (headerString.length < 2) {
+            return GraphType.DEFAULT_GRAPH_TYPE;
         }
 
-        return readSimpleGraphFromAdjacencyMatrix(adjacencyMatrix);
+        return GraphType.fromString(headerString[1].replace("!", ""));
+    }
+
+    private static boolean isValidHeader(String header) {
+        if (header == null || header.isEmpty()) {
+            return false;
+        }
+
+        String[] headerFields = header.split(" ");
+        return areValidHeaderFields(headerFields);
     }
 }

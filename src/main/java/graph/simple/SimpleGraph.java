@@ -1,20 +1,21 @@
 package main.java.graph.simple;
 
 import main.java.connection.Connection;
-import main.java.graph.AbstractGraph;
-import main.java.graph.Edge;
-import main.java.utils.Utils;
+import main.java.graph.Graph;
+import main.java.graph.GraphType;
+import main.java.utils.structures.Edge;
 
 import java.util.*;
 
-public class SimpleGraph extends AbstractGraph {
-    public static final String SIMPLE_GRAPH = "SIMPLE";
-    public static final String UNDIRECTED_GRAPH = "UNDIRECTED_GRAPH";
-
+public class SimpleGraph implements Graph {
     protected int[][] adjacencyMatrix;
-    protected HashMap<Integer, Integer> degreeMap = new HashMap<>();
-    protected HashSet<Edge> edges = new HashSet<>();
-    protected HashMap<Integer, HashSet<Integer>> neighborMap = new HashMap<>();
+    public HashMap<Integer, Integer> degreeMap = new HashMap<>();
+    public HashSet<Edge> edges = new HashSet<>();
+    public HashMap<Integer, HashSet<Integer>> neighborMap = new HashMap<>();
+
+    public SimpleGraph() {
+        this(0);
+    }
 
     public SimpleGraph(int order) {
         adjacencyMatrix = new int[order][order];
@@ -26,14 +27,20 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     SimpleGraph(SimpleGraph simpleGraph) {
-        adjacencyMatrix = Utils.deepCopy2dIntArray(simpleGraph.getAdjacencyMatrix());
+        int[][] adjacencyMatrix = new int[simpleGraph.order()][simpleGraph.order()];
+        HashSet<Edge> edges = new HashSet<>();
+
+        for (Edge edge : simpleGraph.edges) {
+            adjacencyMatrix[edge.v1][edge.v2] = edge.weight;
+            edges.add(new Edge(edge.v1, edge.v2, edge.weight));
+        }
+        this.adjacencyMatrix = adjacencyMatrix;
+        this.edges = edges;
 
         for (int v = 0; v < simpleGraph.order(); v++) {
             degreeMap.put(v, simpleGraph.degreeOf(v));
             neighborMap.put(v, new HashSet<>(simpleGraph.neighborsOf(v)));
         }
-
-        edges = new HashSet<>(simpleGraph.getEdges());
     }
 
     @Override
@@ -64,13 +71,54 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
+    public void addVertex(int v) {
+        int[][] adjacencyMatrix = new int[order() + 1][order() + 1];
+        HashMap<Integer, Integer> degreeMap = new HashMap<>();
+        HashSet<Edge> edges = new HashSet<>();
+        HashMap<Integer, HashSet<Integer>> neighborMap = new HashMap<>();
+        int i0 = 0;
+
+        degreeMap.put(v, 0);
+        neighborMap.put(v, new HashSet<>());
+
+        for (int i = 0; i < order(); i++) {
+            if (i == v) {
+                i0++;
+            }
+
+            int j0 = 0;
+            for (int j = 0; j < order(); j++) {
+                if (j == v) {
+                    j0++;
+                }
+
+                int tail = i + i0;
+                int head = j + j0;
+                int weight = this.adjacencyMatrix[i][j];
+                if (weight != 0) {
+                    adjacencyMatrix[tail][head] = this.adjacencyMatrix[i][j];
+                    edges.add(new Edge(tail, head, weight));
+                }
+            }
+
+            degreeMap.put(i + i0, degreeOf(i));
+            neighborMap.put(i + i0, new HashSet<>(neighborsOf(i)));
+        }
+
+        this.adjacencyMatrix = adjacencyMatrix;
+        this.degreeMap = degreeMap;
+        this.edges = edges;
+        this.neighborMap = neighborMap;
+    }
+
+    @Override
     public SimpleGraph clone() {
         return new SimpleGraph(this);
     }
 
     @Override
-    public AbstractGraph complement() {
-        AbstractGraph graph = newGraph(order());
+    public Graph complement() {
+        Graph graph = newInstance(order());
 
         for (int i = 0; i < order(); i++) {
             for (int j = 0; j < order(); j++) {
@@ -132,7 +180,7 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
-    public AbstractGraph getEdgeInducedSubgraph(Set<Edge> edges) {
+    public Graph getEdgeInducedSubgraph(Set<Edge> edges) {
         HashSet<Integer> vertices = new HashSet<>();
 
         for (Edge edge : edges) {
@@ -150,7 +198,7 @@ public class SimpleGraph extends AbstractGraph {
             }
         }
 
-        AbstractGraph graph = newGraph(vertexMap.size());
+        Graph graph = newInstance(vertexMap.size());
         for (Edge edge : edges) {
             if (hasEdge(edge)) {
                 graph.addEdge(vertexMap.get(edge.v1), vertexMap.get(edge.v2), edge.weight);
@@ -175,12 +223,17 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
-    public AbstractGraph getUnderlyingSimpleSubgraph() {
+    public GraphType getType() {
+        return GraphType.SIMPLE;
+    }
+
+    @Override
+    public Graph getUnderlyingSimpleSubgraph() {
         return this;
     }
 
     @Override
-    public AbstractGraph getVertexInducedSubgraph(Set<Integer> vertices) {
+    public Graph getVertexInducedSubgraph(Set<Integer> vertices) {
         HashMap<Integer, Integer> vertexMap = new HashMap<>();
         int vertexCount = 0;
 
@@ -190,7 +243,7 @@ public class SimpleGraph extends AbstractGraph {
             }
         }
 
-        AbstractGraph vertexInducedSubgraph = newGraph(vertexCount);
+        Graph vertexInducedSubgraph = newInstance(vertexCount);
         for (Integer v : vertices) {
             if (!isValidVertex(v)) {
                 continue;
@@ -217,15 +270,40 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
-    public AbstractGraph intersect(AbstractGraph graph) {
-        int newOrder = Math.min(order(), graph.order());
-       AbstractGraph newGraph = newGraph(newOrder);
+    public void init(HashMap<Integer, HashSet<Integer>> adjacencyList) {
+        for (int v = 0; v < order(); v++) {
+            for (int neighbor : adjacencyList.get(v)) {
+                addEdge(v, neighbor);
+            }
+        }
+    }
 
-       for (Edge edge : edges) {
-           if (graph.hasEdge(edge)) {
-               newGraph.addEdge(edge);
-           }
-       }
+    @Override
+    public void init(int[][] adjacencyMatrix) {
+        for (int row = 0; row < order(); row++) {
+            for (int col = 0; col < order(); col++) {
+                addEdge(row, col, adjacencyMatrix[row][col]);
+            }
+        }
+    }
+
+    @Override
+    public void init(Edge[] edgeList) {
+        for (Edge edge : edgeList) {
+            addEdge(edge);
+        }
+    }
+
+    @Override
+    public Graph intersect(Graph graph) {
+        int newOrder = Math.min(order(), graph.order());
+        Graph newGraph = newInstance(newOrder);
+
+        for (Edge edge : edges) {
+            if (graph.hasEdge(edge)) {
+                newGraph.addEdge(edge);
+            }
+        }
 
         return newGraph;
     }
@@ -277,7 +355,7 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
-    public boolean isEdgeDisjoint(AbstractGraph graph) {
+    public boolean isEdgeDisjoint(Graph graph) {
         for (Edge edge : graph.getEdges()) {
             if (edges.contains(edge)) {
                 return false;
@@ -309,7 +387,7 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
-    public boolean isSubgraphOf(AbstractGraph graph) {
+    public boolean isSubgraphOf(Graph graph) {
         return isStrictSubgraphOf(graph);
     }
 
@@ -422,8 +500,37 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
-    public AbstractGraph transpose() {
-        AbstractGraph graph = newGraph(order());
+    public void swap(int v1, int v2) {
+        int[][] adjacencyMatrix = new int[order()][order()];
+
+        for (Edge edge : edges) {
+            if (edge.v1 == v1) {
+                edge.v1 = v2;
+            } else if (edge.v1 == v2) {
+                edge.v1 = v1;
+            }
+            if (edge.v2 == v1) {
+                edge.v2 = v2;
+            } else if (edge.v2 == v2) {
+                edge.v2 = v1;
+            }
+
+            adjacencyMatrix[edge.v1][edge.v2] = edge.weight;
+        }
+        this.adjacencyMatrix = adjacencyMatrix;
+
+        int degreeOfV1 = degreeOf(v1);
+        degreeMap.put(v1, degreeOf(v2));
+        degreeMap.put(v2, degreeOfV1);
+
+        HashSet<Integer> neighborsOfV1 = neighborsOf(v1);
+        neighborMap.put(v1, neighborsOf(v2));
+        neighborMap.put(v2, neighborsOfV1);
+    }
+
+    @Override
+    public Graph transpose() {
+        Graph graph = newInstance(order());
 
         for (Edge edge : edges) {
             graph.addEdge(edge.getReverse());
@@ -433,7 +540,7 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
-    public AbstractGraph union(AbstractGraph graph) {
+    public Graph union(Graph graph) {
         HashSet<Edge> unionEdges = new HashSet<>();
         HashSet<Integer> unionVertices = new HashSet<>();
 
@@ -448,7 +555,7 @@ public class SimpleGraph extends AbstractGraph {
             unionVertices.add(edge.v2);
         }
 
-        AbstractGraph newGraph = newGraph(unionVertices.size());
+        Graph newGraph = newInstance(unionVertices.size());
 
         for (Edge edge : unionEdges) {
             newGraph.addEdge(edge);
@@ -458,7 +565,7 @@ public class SimpleGraph extends AbstractGraph {
     }
 
     @Override
-    protected AbstractGraph newGraph(int order) {
+    public Graph newInstance(int order) {
         return new SimpleGraph(order);
     }
 
@@ -479,36 +586,20 @@ public class SimpleGraph extends AbstractGraph {
     /**
      * Converts this graph to a specified type.
      *
-     * @param type The type of graph to convert to. Can be "SIMPLE_GRAPH" or "UNDIRECTED_GRAPH".
+     * @param graphType The type of graph to convert to. Can be "SIMPLE_GRAPH" or "UNDIRECTED_GRAPH".
      * @return A new graph of the specified type. If the type is invalid, returns null.
      */
-    public SimpleGraph as(String type) {
-        SimpleGraph graph;
-
-        switch (type) {
-            case SIMPLE_GRAPH -> graph = clone();
-            case UNDIRECTED_GRAPH -> {
-                graph = new UndirectedGraph(order());
+    public SimpleGraph as(GraphType graphType) {
+        switch (graphType) {
+            case SIMPLE: return clone();
+            case UNDIRECTED:
+                UndirectedGraph graph = new UndirectedGraph(order());
                 for (Edge edge : edges) {
                     graph.addEdge(edge);
                 }
-            }
-            default -> graph = null;
+                return graph;
+            default: return null;
         }
-
-        return graph;
-    }
-
-    public static boolean equals(SimpleGraph graph1, SimpleGraph graph2) {
-        if (graph1 == graph2) {
-            return true;
-        }
-
-        if (graph1 == null || graph2 == null) {
-            return false;
-        }
-
-        return graph1.equals(graph2);
     }
 
     /**
@@ -518,7 +609,7 @@ public class SimpleGraph extends AbstractGraph {
      * @param graph The graph to compare against.
      * @return True if this graph is a strict subgraph of the specified graph, false otherwise.
      */
-    public boolean isStrictSubgraphOf(AbstractGraph graph) {
+    public boolean isStrictSubgraphOf(Graph graph) {
         for (Edge edge : edges) {
             if (!graph.hasEdge(edge)) {
                 return false;
@@ -526,10 +617,6 @@ public class SimpleGraph extends AbstractGraph {
         }
 
         return true;
-    }
-
-    protected boolean isValidEdge(Edge edge) {
-        return isValidEdge(edge.v1, edge.v2);
     }
 
     protected boolean isValidEdge(int v1, int v2) {

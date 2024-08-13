@@ -1,9 +1,10 @@
 package test.java;
 
+import main.java.graph.Graph;
+import main.java.graph.GraphType;
 import main.java.graph.simple.SimpleGraph;
 import main.java.graph.simple.UndirectedGraph;
 import main.java.utils.Log;
-import main.java.utils.io.GraphReader;
 import org.junit.BeforeClass;
 
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public class UnitTestClass {
 
     protected static String TEST_CLASS;
 
-    private static final HashMap<String, SimpleGraph> graphs = new HashMap<>();
+    private static final HashMap<String, Graph> graphs = new HashMap<>();
     private static HashMap<String, GraphProfile> profiles;
 
     @BeforeClass
@@ -42,23 +43,23 @@ public class UnitTestClass {
         }
 
         profiles = GraphProfile.parseProfiles("src/data/graph_profiles.txt");
-        graphs.put(BIPARTITE, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + BIPARTITE + TXT));
-        graphs.put(COMPLETE, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + COMPLETE + TXT));
-        graphs.put(CONNECTED, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + CONNECTED + TXT));
-        graphs.put(CYCLE, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + CYCLE + TXT));
-        graphs.put(DIRECTED_PATH, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + DIRECTED_PATH + TXT));
-        graphs.put(DIRECTED_TREE,GraphReader.readSimpleGraphFromFile(GRAPH_PATH + DIRECTED_TREE + TXT));
-        graphs.put(DISCONNECTED, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + DISCONNECTED + TXT));
-        graphs.put(EMPTY, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + EMPTY + TXT));
-        graphs.put(LARGE, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + LARGE + TXT));
-        graphs.put(MEDIUM, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + MEDIUM + TXT));
-        graphs.put(PATH, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + PATH + TXT));
-        graphs.put(SIMPLE, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + SIMPLE + TXT));
-        graphs.put(SINGLE_EDGE, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + SINGLE_EDGE + TXT));
-        graphs.put(SPARSE, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + SPARSE + TXT));
-        graphs.put(STAR, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + STAR + TXT));
-        graphs.put(TREE, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + TREE + TXT));
-        graphs.put(ZERO, GraphReader.readSimpleGraphFromFile(GRAPH_PATH + ZERO + TXT));
+        initGraph(BIPARTITE);
+        initGraph(COMPLETE);
+        initGraph(CONNECTED);
+        initGraph(CYCLE);
+        initGraph(DIRECTED_PATH);
+        initGraph(DIRECTED_TREE);
+        initGraph(DISCONNECTED);
+        initGraph(EMPTY);
+        initGraph(LARGE);
+        initGraph(MEDIUM);
+        initGraph(PATH);
+        initGraph(SIMPLE);
+        initGraph(SINGLE_EDGE);
+        initGraph(SPARSE);
+        initGraph(STAR);
+        initGraph(TREE);
+        initGraph(ZERO);
     }
 
     public UnitTestClass() {
@@ -66,7 +67,7 @@ public class UnitTestClass {
     }
 
     protected static SimpleGraph getSimpleGraph(String name) {
-        return graphs.get(name);
+        return (SimpleGraph) graphs.get(name);
     }
 
     protected static GraphProfile getProfile(String name) {
@@ -78,13 +79,13 @@ public class UnitTestClass {
     }
 
     protected static UndirectedGraph getUndirectedGraph(String name) {
-        return (UndirectedGraph) getSimpleGraph(name).as(SimpleGraph.UNDIRECTED_GRAPH);
+        return (UndirectedGraph) getSimpleGraph(name).as(GraphType.UNDIRECTED);
     }
 
     protected static void test(Assertion assertion, String method) {
         for (String name : graphs.keySet()) {
             String testName = TEST_CLASS + "." + method;
-            Log.d("Testing " + getProfile(name).filename + " on " + testName);
+            Log.i("Testing " + getProfile(name).filename + " on " + testName);
 
             try {
                 assertion.check(name);
@@ -100,5 +101,9 @@ public class UnitTestClass {
 
     protected interface Assertion {
         void check(String name);
+    }
+
+    private static void initGraph(String name) {
+        graphs.put(name, Graph.read(GRAPH_PATH + name + TXT).orElse(null));
     }
 }

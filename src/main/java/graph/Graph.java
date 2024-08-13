@@ -3,17 +3,19 @@ package main.java.graph;
 import main.java.connection.Connection;
 import main.java.distance.Distance;
 import main.java.search.Search;
+import main.java.utils.io.FileType;
+import main.java.utils.io.GraphReader;
+import main.java.utils.io.GraphWriter;
+import main.java.utils.structures.Edge;
 import main.java.walk.Tour;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-public abstract class AbstractGraph {
+public interface Graph {
     /**
      * Adds an edge to the graph.
      */
-    public void addEdge(Edge edge) {
+    default void addEdge(Edge edge) {
         addEdge(edge.v1, edge.v2, edge.weight);
     }
 
@@ -23,7 +25,7 @@ public abstract class AbstractGraph {
      * @param v1     The tail of the edge.
      * @param v2     The head of the edge.
      */
-    public void addEdge(int v1, int v2) {
+    default void addEdge(int v1, int v2) {
         addEdge(v1, v2, 1);
     }
 
@@ -34,19 +36,24 @@ public abstract class AbstractGraph {
      * @param v2     The head of the edge.
      * @param weight The weight of the edge.
      */
-    public abstract void addEdge(int v1, int v2, int weight);
+    void addEdge(int v1, int v2, int weight);
 
     /**
      * Adds a vertex to the graph.
      *
      * @return The index of the newly added vertex.
      */
-    public abstract int addVertex();
+    int addVertex();
+
+    /**
+     * Adds a vertex to the graph at the specified location.
+     */
+    void addVertex(int v);
 
     /**
      * Determines whether two vertices in a graph are adjacent.
      */
-    public boolean adjacent(int v1, int v2) {
+    default boolean adjacent(int v1, int v2) {
         return neighborsOf(v1).contains(v2);
     }
 
@@ -57,7 +64,7 @@ public abstract class AbstractGraph {
      * @param v2    The target vertex.
      * @return The path from v1 to v2.
      */
-    public ArrayList<Integer> bfs(int v1, int v2) {
+    default ArrayList<Integer> bfs(int v1, int v2) {
         return Search.bfs(this, v1, v2);
     }
 
@@ -66,7 +73,7 @@ public abstract class AbstractGraph {
      * The center is the vertex with the lowest eccentricity, or the least
      * max distance to each other vertex.
      */
-    public int center() {
+    default int center() {
         if (order() == 0) {
             return -1;
         }
@@ -100,43 +107,43 @@ public abstract class AbstractGraph {
     /**
      * Creates and returns a deep copy of the graph.
      */
-    public abstract AbstractGraph clone();
+    Graph clone();
 
     /**
      * Returns the complement of the graph.
      */
-    public abstract AbstractGraph complement();
+    Graph complement();
 
     /**
      * Determines whether two vertices in a graph are connected.
      */
-    public boolean connected(int v1, int v2) {
+    default boolean connected(int v1, int v2) {
         return !dfs(v1, v2).isEmpty();
     }
 
     /**
      * Contracts the edge between two vertices by merging them into a single vertex.
      */
-    public void contract(Edge edge) {
+    default void contract(Edge edge) {
         contract(edge.v1, edge.v2);
     }
 
     /**
      * Contracts the edge between two vertices by merging them into a single vertex.
      */
-    public abstract void contract(int v1, int v2);
+    void contract(int v1, int v2);
 
     /**
      * Returns the degree of a specified vertex.
      */
-    public abstract int degreeOf(int v);
+    int degreeOf(int v);
 
     /**
      * Performs a depth-first search (DFS) on the graph starting from vertex 0.
      *
      * @return A list of vertices visited in DFS order.
      */
-    public ArrayList<Integer> dfs() {
+    default ArrayList<Integer> dfs() {
         return Search.dfs(this);
     }
 
@@ -146,7 +153,7 @@ public abstract class AbstractGraph {
      * @param v The starting vertex.
      * @return A list of vertices visited in DFS order.
      */
-    public ArrayList<Integer> dfs(int v) {
+    default ArrayList<Integer> dfs(int v) {
         return Search.dfs(this, v);
     }
 
@@ -157,21 +164,21 @@ public abstract class AbstractGraph {
      * @param v2 The target vertex.
      * @return A list of vertices visited in DFS order.
      */
-    public ArrayList<Integer> dfs(int v1, int v2) {
+    default ArrayList<Integer> dfs(int v1, int v2) {
         return Search.dfs(this, v1, v2);
     }
 
     /**
      * Calculates the shortest distance between two vertices.
      */
-    public int distance(int v1, int v2) {
+    default int distance(int v1, int v2) {
         return Distance.dijkstra(this, v1, v2);
     }
 
     /**
      * Returns the adjacency matrix of the graph.
      */
-    public abstract int[][] getAdjacencyMatrix();
+    int[][] getAdjacencyMatrix();
 
     /**
      * Get connected components of this graph. The definition of a connected
@@ -179,38 +186,38 @@ public abstract class AbstractGraph {
      *
      * @return a HashSet of HashSets of vertices, representing the set of components.
      */
-    public HashSet<HashSet<Integer>> getComponents() {
+    default HashSet<HashSet<Integer>> getComponents() {
         return Connection.kosaraju(this);
     }
 
     /**
      * Returns a subgraph induced by the specified edges.
      */
-    public abstract AbstractGraph getEdgeInducedSubgraph(Set<Edge> edges);
+    Graph getEdgeInducedSubgraph(Set<Edge> edges);
 
     /**
      * Returns the set of edges in the graph.
      */
-    public abstract HashSet<Edge> getEdges();
+    HashSet<Edge> getEdges();
 
     /**
      * Returns the weight of a specified edge.
      */
-    public int getEdgeWeight(Edge edge) {
+    default int getEdgeWeight(Edge edge) {
         return getEdgeWeight(edge.v1, edge.v2);
     }
 
     /**
      * Returns the weight of the edge between two vertices.
      */
-    public abstract int getEdgeWeight(int v1, int v2);
+    int getEdgeWeight(int v1, int v2);
 
     /**
      * Returns a maximum tour of the graph if it is Eulerian.
      *
      * @return A list of vertices in the maximum tour, or null if the graph is not Eulerian.
      */
-    public ArrayList<Integer> getEulerTour() {
+    default ArrayList<Integer> getEulerTour() {
         if (!isEulerian()) {
             return null;
         }
@@ -218,28 +225,36 @@ public abstract class AbstractGraph {
         return Tour.fleury(this);
     }
 
+    GraphType getType();
+
     /**
      * Returns the underlying simple graph of a complex graph. This can be
      * found by deleting all loops and multi-edges.
      */
-    public abstract AbstractGraph getUnderlyingSimpleSubgraph();
+    Graph getUnderlyingSimpleSubgraph();
 
     /**
      * Returns a subgraph induced by the specified vertices.
      */
-    public abstract AbstractGraph getVertexInducedSubgraph(Set<Integer> vertices);
+    Graph getVertexInducedSubgraph(Set<Integer> vertices);
 
     /**
      * Checks if the graph contains a specified edge.
      */
-    public boolean hasEdge(Edge edge) {
+    default boolean hasEdge(Edge edge) {
         return hasEdge(edge.v1, edge.v2);
     }
 
     /**
      * Checks if the graph contains an edge between two vertices.
      */
-    public abstract boolean hasEdge(int v1, int v2);
+    boolean hasEdge(int v1, int v2);
+
+    void init(HashMap<Integer, HashSet<Integer>> adjacencyList);
+
+    void init(int[][] adjacencyMatrix);
+
+    void init(Edge[] edgeList);
 
     /**
      * Computes the intersection of this graph with another graph.
@@ -249,71 +264,71 @@ public abstract class AbstractGraph {
      * @param graph The graph to intersect with this graph.
      * @return A new AbstractGraph representing the intersection of this graph and the specified graph.
      */
-    public abstract AbstractGraph intersect(AbstractGraph graph);
+    Graph intersect(Graph graph);
 
     /**
      * Checks if the graph is complete.
      */
-    public abstract boolean isComplete();
+    boolean isComplete();
 
     /**
      * Checks if the graph is connected.
      */
-    public abstract boolean isConnected();
+    boolean isConnected();
 
     /**
      * Checks if an edge is a cut-edge (bridge).
      */
-    public boolean isCutEdge(Edge edge) {
+    default boolean isCutEdge(Edge edge) {
         return isCutEdge(edge.v1, edge.v2);
     }
 
     /**
      * Checks if an edge between two vertices is a cut-edge (bridge).
      */
-    public abstract boolean isCutEdge(int v1, int v2);
+    boolean isCutEdge(int v1, int v2);
 
     /**
      * Checks if a vertex is a cut-vertex (articulation point).
      */
-    public abstract boolean isCutVertex(int v);
+    boolean isCutVertex(int v);
 
     /**
      * Checks if the graph contains cycles.
      */
-    public abstract boolean isCyclic();
+    boolean isCyclic();
 
     /**
      * Checks if the graph is directed.
      */
-    public abstract boolean isDirected();
+    boolean isDirected();
 
     /**
      * Checks if this graph is edge-disjoint with another graph.
      * Two graphs are edge-disjoint if they do not share any common edges.
      */
-    public abstract boolean isEdgeDisjoint(AbstractGraph graph);
+    boolean isEdgeDisjoint(Graph graph);
 
     /**
      * Checks if the graph is empty (contains no edges).
      */
-    public abstract boolean isEmpty();
+    boolean isEmpty();
 
     /**
      * Checks if the graph is Eulerian.
      */
-    public abstract boolean isEulerian();
+    boolean isEulerian();
 
     /**
      * Checks if the graph is simple (contains no loops or multiple edges).
      */
-    public abstract boolean isSimple();
+    boolean isSimple();
 
     /**
      * Checks if this graph is a spanning subgraph of another graph.
      * A spanning subgraph is a subgraph that contains all the vertices of the original graph.
      */
-    public boolean isSpanningSubgraphOf(AbstractGraph graph) {
+    default boolean isSpanningSubgraphOf(Graph graph) {
         return isSubgraphOf(graph) && graph.order() == order();
     }
 
@@ -321,28 +336,28 @@ public abstract class AbstractGraph {
      * Checks if this graph is a subgraph of another graph.
      * A subgraph is a graph formed from a subset of the vertices and edges of another graph.
      */
-    public abstract boolean isSubgraphOf(AbstractGraph graph);
+    boolean isSubgraphOf(Graph graph);
 
     /**
      * Checks if the graph is a tree.
      * A tree is a connected, acyclic graph.
      */
-    public abstract boolean isTree();
+    boolean isTree();
 
     /**
      * Returns the maximum degree of any vertex in the graph.
      */
-    public abstract int maxDegree();
+    int maxDegree();
 
     /**
      * Returns the minimum degree of any vertex in the graph.
      */
-    public abstract int minDegree();
+    int minDegree();
 
     /**
      * Creates a subgraph by removing a specific edge from this graph.
      */
-    public AbstractGraph minus(Edge edge) {
+    default Graph minus(Edge edge) {
         HashSet<Edge> minusEdges = new HashSet<>(getEdges());
         minusEdges.remove(edge);
 
@@ -352,7 +367,7 @@ public abstract class AbstractGraph {
     /**
      * Creates a subgraph by removing a set of edges from this graph.
      */
-    public AbstractGraph minus(HashSet<Edge> edges) {
+    default Graph minus(HashSet<Edge> edges) {
         HashSet<Edge> minusEdges = new HashSet<>(getEdges());
         minusEdges.removeAll(edges);
 
@@ -362,57 +377,85 @@ public abstract class AbstractGraph {
     /**
      * Returns the neighbors of a specified vertex.
      */
-    public abstract HashSet<Integer> neighborsOf(int v);
+    HashSet<Integer> neighborsOf(int v);
+
+    /**
+     * Create a new graph instance of the same type.
+     */
+    default Graph newInstance(int order) {
+        return getType().newInstance(order);
+    }
 
     /**
      * Returns the number of connected components in the graph.
      */
-    public abstract int numComponents();
+    int numComponents();
 
     /**
      * Returns the number of vertices in the graph.
      */
-    public abstract int order();
+    int order();
+
+    /**
+     * Attempts to read a graph from the specified file.
+     *
+     * @param filename path to the graph file
+     * @return an {@link Optional} containing the {@link Graph} if the file is successfully read;
+     *         an empty {@link Optional} if the file cannot be read
+     */
+    static Optional<Graph> read(String filename) {
+        return GraphReader.read(filename);
+    }
 
     /**
      * Removes an edge from the graph.
      */
-    public void removeEdge(Edge edge) {
+    default void removeEdge(Edge edge) {
         removeEdge(edge.v1, edge.v2);
     }
 
     /**
      * Removes an edge between two vertices from the graph.
      */
-    public abstract void removeEdge(int v1, int v2);
+    void removeEdge(int v1, int v2);
 
     /**
      * Removes a vertex from the graph.
      */
-    public abstract void removeVertex(int v);
+    void removeVertex(int v);
 
     /**
      * Returns the number of edges in the graph.
      */
-    public abstract int size();
+    int size();
+
+    /**
+     * Swaps the IDs/indices of two vertices.
+     */
+    void swap(int v1, int v2);
 
     /**
      * Computes the transpose of this graph.
      * The transpose of a graph is obtained by reversing the direction of all edges.
      * For an undirected graph, the transpose is the same as the original graph.
      */
-    public abstract AbstractGraph transpose();
+    Graph transpose();
 
     /**
      * Computes the union of this graph with another graph.
      * The union of two graphs contains all the vertices from both graphs and all the edges
      * that are present in either of the graphs.
      */
-    public abstract AbstractGraph union(AbstractGraph graph);
+    Graph union(Graph graph);
 
     /**
-     * This is a protected method implemented by non-abstract subgraphs to return a new
-     * graph of the correct type.
+     * Writes this graph to a file with the specified file type and path.
+     *
+     * @param fileType the type of the file to which the graph should be written (adjacency
+     *                 list, adjacency matrix, edge list, etc.)
+     * @param path the path where the graph file will be saved
      */
-    protected abstract AbstractGraph newGraph(int order);
+    default void write(FileType fileType, String path) {
+        GraphWriter.write(this, fileType, path);
+    }
 }

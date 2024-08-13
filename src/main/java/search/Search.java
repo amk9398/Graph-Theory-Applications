@@ -1,8 +1,11 @@
 package main.java.search;
 
-import main.java.graph.AbstractGraph;
+import main.java.graph.Graph;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Objects;
 
 public class Search {
     /**
@@ -14,7 +17,7 @@ public class Search {
      * @param v2 The target vertex of the path.
      * @return An ArrayList of integers representing the path from v1 to v2, or null if no path is found.
      */
-    public static ArrayList<Integer> bfs(AbstractGraph graph, Integer v1, Integer v2) {
+    public static ArrayList<Integer> bfs(Graph graph, Integer v1, Integer v2) {
         HashMap<Integer, Integer> predecessorMap = new HashMap<>();
         HashSet<Integer> visited = new HashSet<>();
         ArrayList<Integer> vertexQueue = new ArrayList<>();
@@ -62,7 +65,7 @@ public class Search {
      * @param graph The graph being searched.
      * @return A ArrayList of integers representing the visited vertices in order of visitation.
      */
-    public static ArrayList<Integer> dfs(AbstractGraph graph) {
+    public static ArrayList<Integer> dfs(Graph graph) {
         return dfs(graph, 0);
     }
 
@@ -73,7 +76,7 @@ public class Search {
      * @param v The starting vertex of the path.
      * @return A ArrayList of integers representing the visited vertices in order of visitation.
      */
-    public static ArrayList<Integer> dfs(AbstractGraph graph, int v) {
+    public static ArrayList<Integer> dfs(Graph graph, int v) {
         ArrayList<Integer> visited = new ArrayList<>();
 
         for (int i = 0; i < graph.order(); i++) {
@@ -100,11 +103,11 @@ public class Search {
      * @param v2 The target vertex of the path.
      * @return An ArrayList of integers representing the path from v1 to v2.
      */
-    public static ArrayList<Integer> dfs(AbstractGraph graph, int v1, int v2) {
+    public static ArrayList<Integer> dfs(Graph graph, int v1, int v2) {
         return dfsH(graph, v1, v2, new HashSet<>(), new ArrayList<>());
     }
 
-    private static ArrayList<Integer> dfsH(AbstractGraph graph, int v1, int v2, HashSet<Integer> visited,
+    private static ArrayList<Integer> dfsH(Graph graph, int v1, int v2, HashSet<Integer> visited,
                                            ArrayList<Integer> path) {
         visited.add(v1);
         path.add(v1);

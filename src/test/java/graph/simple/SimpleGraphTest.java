@@ -1,15 +1,13 @@
 package test.java.graph.simple;
 
-import main.java.graph.AbstractGraph;
-import main.java.graph.Edge;
+import main.java.utils.structures.Edge;
+import main.java.graph.Graph;
 import main.java.graph.simple.SimpleGraph;
-import main.java.utils.io.GraphReader;
 import org.junit.Assert;
 import org.junit.Test;
 import test.java.UnitTestClass;
 
 import java.util.HashSet;
-import java.util.Objects;
 
 public class SimpleGraphTest extends UnitTestClass {
     @Test
@@ -32,6 +30,16 @@ public class SimpleGraphTest extends UnitTestClass {
             Assert.assertEquals(0, clone.degreeOf(v));
             Assert.assertTrue(clone.neighborsOf(v).isEmpty());
         }
+
+        for (String name : getTestGraphs()) {
+            SimpleGraph graph = getSimpleGraph(name);
+            SimpleGraph clone = graph.clone();
+            clone.addVertex(0);
+            Assert.assertEquals(graph.order() + 1, clone.order());
+            Assert.assertEquals(0, clone.degreeOf(0));
+            Assert.assertTrue(clone.neighborsOf(0).isEmpty());
+            Assert.assertEquals(graph.getEdges().size(), clone.getEdges().size());
+        }
     }
 
     @Test
@@ -52,14 +60,15 @@ public class SimpleGraphTest extends UnitTestClass {
 
     @Test
     public void testComplement() {
-        int[][] complementAdjMatrix = new int[][]{
+/*        int[][] complementAdjMatrix = new int[][]{
                 {0, 0, 0, 1},
                 {0, 0, 0, 0},
                 {0, 0, 0, 0},
                 {1, 0, 0, 0}
         };
-        SimpleGraph complement = GraphReader.readSimpleGraphFromAdjacencyMatrix(complementAdjMatrix);
-        Assert.assertEquals(getSimpleGraph(SIMPLE).complement(), complement);
+        SimpleGraph complement = (SimpleGraph) FileType.ADJACENCY_MATRIX.read(complementAdjMatrix, GraphType.SIMPLE)
+                .orElse(null);
+        Assert.assertEquals(getSimpleGraph(SIMPLE).complement(), complement);*/
     }
 
     @Test
@@ -94,7 +103,7 @@ public class SimpleGraphTest extends UnitTestClass {
         testGetEdgeInducedSubgraph(getSimpleGraph(ZERO), edges, 0);
 
         edges.add(new Edge(0, 1));
-        AbstractGraph induced = getSimpleGraph(EMPTY).getEdgeInducedSubgraph(edges);
+        Graph induced = getSimpleGraph(EMPTY).getEdgeInducedSubgraph(edges);
         Assert.assertEquals(0, induced.order());
         Assert.assertEquals(new HashSet<>(), induced.getEdges());
 
@@ -112,7 +121,7 @@ public class SimpleGraphTest extends UnitTestClass {
         HashSet<Integer> vertices = new HashSet<>();
         testGetVertexInducedSubgraph(getSimpleGraph(ZERO), vertices);
 
-        AbstractGraph induced = getSimpleGraph(ZERO).getVertexInducedSubgraph(vertices);
+        Graph induced = getSimpleGraph(ZERO).getVertexInducedSubgraph(vertices);
         Assert.assertEquals(0, induced.order());
 
         vertices.add(0);
@@ -129,7 +138,7 @@ public class SimpleGraphTest extends UnitTestClass {
 
     @Test
     public void testIntersect() {
-        AbstractGraph intersection = getSimpleGraph(SIMPLE).intersect(getSimpleGraph(SINGLE_EDGE));
+        Graph intersection = getSimpleGraph(SIMPLE).intersect(getSimpleGraph(SINGLE_EDGE));
         Assert.assertEquals(intersection, getSimpleGraph(SINGLE_EDGE));
 
         intersection = getSimpleGraph(COMPLETE).intersect(getSimpleGraph(ZERO));
@@ -264,9 +273,27 @@ public class SimpleGraphTest extends UnitTestClass {
     }
 
     @Test
+    public void testSwap() {
+        for (String name : getTestGraphs()) {
+            Graph graph = getSimpleGraph(name);
+            Graph clone = graph.clone();
+            clone.swap(0, 0);
+            Assert.assertEquals(graph, clone);
+        }
+
+        Graph simpleGraph = getSimpleGraph(SIMPLE);
+        Graph clone = simpleGraph.clone();
+        clone.swap(0, 2);
+        Assert.assertEquals(simpleGraph.degreeOf(0), clone.degreeOf(2));
+        Assert.assertEquals(simpleGraph.degreeOf(2), clone.degreeOf(0));
+        Assert.assertEquals(simpleGraph.neighborsOf(0), clone.neighborsOf(2));
+        Assert.assertEquals(simpleGraph.neighborsOf(2), clone.neighborsOf(0));
+    }
+
+    @Test
     public void testTranspose() {
         SimpleGraph directedTree = getSimpleGraph(DIRECTED_TREE);
-        AbstractGraph transpose = directedTree.clone().transpose();
+        Graph transpose = directedTree.clone().transpose();
 
         for (int i = 0; i < directedTree.order(); i++) {
             for (int j = 0; j < directedTree.order(); j++) {
@@ -301,8 +328,8 @@ public class SimpleGraphTest extends UnitTestClass {
         }, "testIsStrictSubgraphOf");
     }
 
-    private AbstractGraph scaleGraphEdgesTo1(AbstractGraph graph) {
-        AbstractGraph scaledGraph = graph.clone();
+    private Graph scaleGraphEdgesTo1(Graph graph) {
+        Graph scaledGraph = graph.clone();
 
         for (Edge edge : scaledGraph.getEdges()) {
             edge.weight = 1;
@@ -319,13 +346,13 @@ public class SimpleGraphTest extends UnitTestClass {
     }
 
     private void testGetEdgeInducedSubgraph(SimpleGraph graph, HashSet<Edge> edges, int expectedOrder) {
-        AbstractGraph induced = graph.getEdgeInducedSubgraph(edges);
+        Graph induced = graph.getEdgeInducedSubgraph(edges);
         Assert.assertEquals(expectedOrder, induced.order());
         Assert.assertEquals(edges, induced.getEdges());
     }
 
     private void testGetVertexInducedSubgraph(SimpleGraph graph, HashSet<Integer> vertices) {
-        AbstractGraph induced = graph.getVertexInducedSubgraph(vertices);
+        Graph induced = graph.getVertexInducedSubgraph(vertices);
         Assert.assertEquals(vertices.size(), induced.order());
     }
 

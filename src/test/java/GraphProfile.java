@@ -1,6 +1,6 @@
 package test.java;
 
-import main.java.graph.Edge;
+import main.java.utils.structures.Edge;
 import main.java.utils.Log;
 
 import java.io.BufferedReader;

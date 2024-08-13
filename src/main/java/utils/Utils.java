@@ -1,6 +1,7 @@
 package main.java.utils;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public class Utils {
 
@@ -65,5 +66,13 @@ public class Utils {
             r++;
         }
         return subMatrix;
+    }
+
+    public static Optional<Integer> tryParseInt(String str) {
+        try {
+            return Optional.of(Integer.parseInt(str));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
     }
 }

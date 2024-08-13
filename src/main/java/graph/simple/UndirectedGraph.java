@@ -1,8 +1,9 @@
 package main.java.graph.simple;
 
 import main.java.connection.Connection;
-import main.java.graph.AbstractGraph;
-import main.java.graph.Edge;
+import main.java.graph.Graph;
+import main.java.graph.GraphType;
+import main.java.utils.structures.Edge;
 
 import java.util.HashSet;
 
@@ -12,7 +13,21 @@ public class UndirectedGraph extends SimpleGraph {
     }
 
     private UndirectedGraph(UndirectedGraph undirectedGraph) {
-        super(undirectedGraph);
+        int[][] adjacencyMatrix = new int[undirectedGraph.order()][undirectedGraph.order()];
+        HashSet<Edge> edges = new HashSet<>();
+
+        for (Edge edge : undirectedGraph.edges) {
+            adjacencyMatrix[edge.v1][edge.v2] = edge.weight;
+            adjacencyMatrix[edge.v2][edge.v1] = edge.weight;
+            edges.add(new Edge(edge.v1, edge.v2, edge.weight));
+        }
+        this.adjacencyMatrix = adjacencyMatrix;
+        this.edges = edges;
+
+        for (int v = 0; v < order(); v++) {
+            degreeMap.put(v, undirectedGraph.degreeOf(v));
+            neighborMap.put(v, new HashSet<>(undirectedGraph.neighborsOf(v)));
+        }
     }
 
     @Override
@@ -25,7 +40,7 @@ public class UndirectedGraph extends SimpleGraph {
         adjacencyMatrix[v2][v1] = weight;
         degreeMap.put(v1, degreeOf(v1) + 1);
         degreeMap.put(v2, degreeOf(v2) + 1);
-        edges.add(new Edge(v1, v2, weight));
+        edges.add(new Edge(Math.min(v1, v2), Math.max(v1, v2), weight));
         neighborMap.get(v1).add(v2);
         neighborMap.get(v2).add(v1);
     }
@@ -33,6 +48,11 @@ public class UndirectedGraph extends SimpleGraph {
     @Override
     public UndirectedGraph clone() {
         return new UndirectedGraph(this);
+    }
+
+    @Override
+    public GraphType getType() {
+        return GraphType.UNDIRECTED;
     }
 
     @Override
@@ -66,7 +86,7 @@ public class UndirectedGraph extends SimpleGraph {
     }
 
     @Override
-    public AbstractGraph newGraph(int order) {
+    public Graph newInstance(int order) {
         return new UndirectedGraph(order);
     }
 
@@ -123,7 +143,37 @@ public class UndirectedGraph extends SimpleGraph {
     }
 
     @Override
-    public AbstractGraph transpose() {
+    public void swap(int v1, int v2) {
+        int[][] adjacencyMatrix = new int[order()][order()];
+
+        for (Edge edge : edges) {
+            if (edge.v1 == v1) {
+                edge.v1 = v2;
+            } else if (edge.v1 == v2) {
+                edge.v1 = v1;
+            }
+            if (edge.v2 == v1) {
+                edge.v2 = v2;
+            } else if (edge.v2 == v2) {
+                edge.v2 = v1;
+            }
+
+            adjacencyMatrix[edge.v1][edge.v2] = edge.weight;
+            adjacencyMatrix[edge.v2][edge.v1] = edge.weight;
+        }
+        this.adjacencyMatrix = adjacencyMatrix;
+
+        int degreeOfV1 = degreeOf(v1);
+        degreeMap.put(v1, degreeOf(v2));
+        degreeMap.put(v2, degreeOfV1);
+
+        HashSet<Integer> neighborsOfV1 = neighborsOf(v1);
+        neighborMap.put(v1, neighborsOf(v2));
+        neighborMap.put(v2, neighborsOfV1);
+    }
+
+    @Override
+    public Graph transpose() {
         return clone();
     }
 
@@ -132,8 +182,8 @@ public class UndirectedGraph extends SimpleGraph {
      *
      * @return The cotree of the graph as an AbstractGraph, or null if the MST is null.
      */
-    public AbstractGraph cotree() {
-        AbstractGraph mst = mst();
+    public Graph cotree() {
+        Graph mst = mst();
         return mst == null ? null : mst.complement();
     }
 
@@ -143,8 +193,8 @@ public class UndirectedGraph extends SimpleGraph {
      * @param graph The graph to check.
      * @return True if the given graph is a cotree of this graph, false otherwise.
      */
-    public boolean isCotreeOf(AbstractGraph graph) {
-        AbstractGraph complement = graph.complement();
+    public boolean isCotreeOf(Graph graph) {
+        Graph complement = graph.complement();
         return complement.isTree() && complement.order() == order();
     }
 

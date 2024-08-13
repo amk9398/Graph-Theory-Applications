@@ -1,9 +1,8 @@
 package main.java.distance;
 
-import main.java.graph.AbstractGraph;
+import main.java.graph.Graph;
 
 import java.util.HashSet;
-import java.util.Optional;
 
 public class Distance {
     /**
@@ -14,7 +13,7 @@ public class Distance {
      * @param start the starting vertex from which to calculate the shortest path distances.
      * @return an array where the value at index {@code v} is the shortest distance from the start vertex to vertex {@code v}.
      */
-    public static Integer[] dijkstra(AbstractGraph graph, int start) {
+    public static Integer[] dijkstra(Graph graph, int start) {
         Integer[] distances = new Integer[graph.order()];
         HashSet<Integer> unvisited = new HashSet<>();
 
@@ -60,7 +59,7 @@ public class Distance {
      * @param end the ending vertex to which the shortest path distance is calculated.
      * @return the shortest distance from the start vertex to the end vertex.
      */
-    public static Integer dijkstra(AbstractGraph graph, int start, int end) {
+    public static Integer dijkstra(Graph graph, int start, int end) {
         return dijkstra(graph, start)[end];
     }
 }

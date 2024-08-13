@@ -1,6 +1,6 @@
 package main.java.walk;
 
-import main.java.graph.AbstractGraph;
+import main.java.graph.Graph;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,12 +14,12 @@ public class Tour {
      * @param graph the input graph to find the Eulerian tour for
      * @return an ArrayList of integers representing the Eulerian tour
      */
-    public static ArrayList<Integer> fleury(AbstractGraph graph) {
+    public static ArrayList<Integer> fleury(Graph graph) {
         if (graph.order() == 0) {
             return new ArrayList<>();
         }
 
-        AbstractGraph copyGraph = graph.clone();
+        Graph copyGraph = graph.clone();
 
         int u = 0;
         for (int v = 0; v < copyGraph.order(); v++) {
@@ -59,7 +59,7 @@ public class Tour {
         return tour;
     }
 
-    private static int countReachableVertices(AbstractGraph graph, int u) {
+    private static int countReachableVertices(Graph graph, int u) {
         HashSet<Integer> visited = new HashSet<>();
         Stack<Integer> stack = new Stack<>();
 

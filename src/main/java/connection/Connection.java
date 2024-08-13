@@ -1,9 +1,9 @@
 package main.java.connection;
 
-import main.java.graph.AbstractGraph;
-import main.java.graph.Edge;
+import main.java.graph.Graph;
 import main.java.graph.simple.UndirectedGraph;
 import main.java.utils.Utils;
+import main.java.utils.structures.Edge;
 import main.java.utils.structures.UnionFind;
 
 import java.util.HashSet;
@@ -46,7 +46,7 @@ public class Connection {
      * @param graph the input graph
      * @return the number of strongly connected components
      */
-    public static HashSet<HashSet<Integer>> kosaraju(AbstractGraph graph) {
+    public static HashSet<HashSet<Integer>> kosaraju(Graph graph) {
         HashSet<Integer> visited = new HashSet<>();
         Stack<Integer> visitingOrder = new Stack<>();
 
@@ -56,7 +56,7 @@ public class Connection {
             }
         }
 
-        AbstractGraph clone = graph.clone().transpose();
+        Graph clone = graph.clone().transpose();
         visited.clear();
         HashSet<HashSet<Integer>> components = new HashSet<>();
 
@@ -118,7 +118,7 @@ public class Connection {
         return mst;
     }
 
-    private static void kosarajuH(AbstractGraph graph, int v, HashSet<Integer> visited, Stack<Integer> stack) {
+    private static void kosarajuH(Graph graph, int v, HashSet<Integer> visited, Stack<Integer> stack) {
         visited.add(v);
         for (Integer i : graph.neighborsOf(v)) {
             if (!visited.contains(i)) {

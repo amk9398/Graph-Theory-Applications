@@ -1,6 +1,6 @@
 package test.java.connection;
 
-import main.java.graph.Edge;
+import main.java.utils.structures.Edge;
 import main.java.graph.simple.UndirectedGraph;
 import org.junit.Assert;
 import org.junit.Test;

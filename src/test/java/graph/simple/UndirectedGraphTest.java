@@ -1,7 +1,7 @@
 package test.java.graph.simple;
 
-import main.java.graph.AbstractGraph;
-import main.java.graph.Edge;
+import main.java.graph.Graph;
+import main.java.utils.structures.Edge;
 import main.java.graph.simple.SimpleGraph;
 import main.java.graph.simple.UndirectedGraph;
 import org.junit.Assert;
@@ -26,7 +26,7 @@ public class UndirectedGraphTest extends UnitTestClass {
                 return;
             }
 
-            AbstractGraph cotree = getUndirectedGraph(name).cotree();
+            Graph cotree = getUndirectedGraph(name).cotree();
             Assert.assertNotNull(cotree);
             Assert.assertTrue(getUndirectedGraph(name).isCotreeOf(cotree));
         }, "AbstractGraphTest.testCotree");
