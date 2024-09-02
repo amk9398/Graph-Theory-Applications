@@ -29,13 +29,13 @@ public class UndirectedGraphTest extends UnitTestClass {
             Graph cotree = getUndirectedGraph(name).cotree();
             Assert.assertNotNull(cotree);
             Assert.assertTrue(getUndirectedGraph(name).isCotreeOf(cotree));
-        }, "AbstractGraphTest.testCotree");
+        }, "testCotree");
     }
 
     @Test
     public void testIsComplete() {
         test(name -> Assert.assertEquals(getProfile(name).complete, getUndirectedGraph(name).isComplete()),
-                "UndirectedGraphTest.testIsComplete");
+                "testIsComplete");
     }
 
     @Test
@@ -44,19 +44,19 @@ public class UndirectedGraphTest extends UnitTestClass {
             int numWeakComponents = getProfile(name).numWeakComponents;
             boolean isConnected = numWeakComponents == 0 || numWeakComponents == 1;
             Assert.assertEquals(isConnected, getUndirectedGraph(name).isConnected());
-        }, "UndirectedGraphTest.testIsConnected");
+        }, "testIsConnected");
     }
 
     @Test
     public void testIsCyclic() {
         test(name -> Assert.assertEquals(getProfile(name).undirectedCyclic, getUndirectedGraph(name).isCyclic()),
-                "UndirectedGraphTest.testIsCyclic");
+                "testIsCyclic");
     }
 
     @Test
     public void testNumComponents() {
         test(name -> Assert.assertEquals(getProfile(name).numWeakComponents, getUndirectedGraph(name).numComponents()),
-                "UndirectedGraphTest.testNumComponents");
+                "testNumComponents");
     }
 
     @Test

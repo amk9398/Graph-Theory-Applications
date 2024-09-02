@@ -42,6 +42,10 @@ public class Edge {
         return "(" + v1 + ", " + v2 + ")";
     }
 
+    public Edge clone() {
+        return new Edge(v1, v2, weight);
+    }
+
     /**
      * Returns a new edge that is the reverse of the current edge.
      * The reverse edge will have the same weight, but its vertices will be swapped.

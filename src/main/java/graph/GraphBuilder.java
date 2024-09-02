@@ -1,8 +1,5 @@
 package main.java.graph;
 
-import main.java.utils.structures.Edge;
-
-import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -73,18 +70,22 @@ public class GraphBuilder {
         Graph graph = graphType.newInstance(order);
         Random random = new Random();
         int size = this.size.getSize(order, graph.isDirected());
+        double probability = (double) size / Size.COMPLETE.getSize(order, graph.isDirected());
+        if (!graph.isDirected()) {
+            probability *= 2;
+        }
 
-        ArrayList<Edge> allPossibleEdges = generateAllPossibleEdges();
-        for (int i = 0; i < size; i++) {
+        for (int row = 0; row < order; row++) {
+            for (int col = 0; col < order; col++) {
+                if (row == col) {
+                    continue;
+                }
 
-            int index = random.nextInt(0, allPossibleEdges.size());
-            int weight = random.nextInt(1, 11);
-            Edge edge = allPossibleEdges.remove(index);
-
-            if (graph.hasEdge(edge)) {
-                continue;
+                if (random.nextDouble() < probability) {
+                    int weight = weighted ? random.nextInt(1, 11) : 1;
+                    graph.addEdge(row, col, weight );
+                }
             }
-            graph.addEdge(edge.v1, edge.v2, weighted ? weight : 1);
         }
 
         return graph;
@@ -108,17 +109,5 @@ public class GraphBuilder {
     public GraphBuilder weighted(boolean weighted) {
         this.weighted = weighted;
         return this;
-    }
-
-    private ArrayList<Edge> generateAllPossibleEdges() {
-        ArrayList<Edge> edges = new ArrayList<>();
-
-        for (int i = 0; i < order; i++) {
-            for (int j = 0; j < order; j++) {
-                edges.add(new Edge(i, j));
-            }
-        }
-
-        return edges;
     }
 }

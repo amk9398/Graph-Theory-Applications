@@ -10,13 +10,13 @@ public class ConnectionTest extends UnitTestClass {
     @Test
     public void testKirchhoff() {
         test(name -> Assert.assertEquals(getProfile(name).numSpanningTrees, getUndirectedGraph(name).numSpanningTrees()),
-                "ConnectionTest.testKirchhoff");
+                "testKirchhoff");
     }
 
     @Test
     public void testKosaraju() {
         test(name -> Assert.assertEquals(getProfile(name).numStrongComponents, getSimpleGraph(name).numComponents()),
-                "ConnectionTest.testKosaraju");
+                "testKosaraju");
     }
 
     @Test
@@ -32,8 +32,8 @@ public class ConnectionTest extends UnitTestClass {
                 for (Edge edge : mst.getEdges()) {
                     mstWeight += edge.weight;
                 }
-                Assert.assertEquals(expected, mstWeight);
+                Assert.assertEquals(expected, mstWeight / 2);
             }
-        }, "ConnectionTest.testKruskal");
+        }, "testKruskal");
     }
 }

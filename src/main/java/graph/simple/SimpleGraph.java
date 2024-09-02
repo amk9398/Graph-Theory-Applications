@@ -4,41 +4,32 @@ import main.java.connection.Connection;
 import main.java.graph.Graph;
 import main.java.graph.GraphType;
 import main.java.utils.structures.Edge;
+import main.java.utils.structures.EdgeList;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SimpleGraph implements Graph {
-    protected int[][] adjacencyMatrix;
-    public HashMap<Integer, Integer> degreeMap = new HashMap<>();
-    public HashSet<Edge> edges = new HashSet<>();
-    public HashMap<Integer, HashSet<Integer>> neighborMap = new HashMap<>();
-
-    public SimpleGraph() {
-        this(0);
-    }
+    private EdgeList edgeList = new EdgeList();
+    private HashMap<Integer, HashSet<Integer>> neighborMap = new HashMap<>();
 
     public SimpleGraph(int order) {
-        adjacencyMatrix = new int[order][order];
-
         for (int v = 0; v < order; v++) {
-            degreeMap.put(v, 0);
             neighborMap.put(v, new HashSet<>());
         }
     }
 
     SimpleGraph(SimpleGraph simpleGraph) {
-        int[][] adjacencyMatrix = new int[simpleGraph.order()][simpleGraph.order()];
-        HashSet<Edge> edges = new HashSet<>();
+        EdgeList edgeList = new EdgeList(simpleGraph.size());
 
-        for (Edge edge : simpleGraph.edges) {
-            adjacencyMatrix[edge.v1][edge.v2] = edge.weight;
-            edges.add(new Edge(edge.v1, edge.v2, edge.weight));
+        for (Edge edge : simpleGraph.getEdges()) {
+            edgeList.put(edge.clone(), simpleGraph.getEdgeWeight(edge));
         }
-        this.adjacencyMatrix = adjacencyMatrix;
-        this.edges = edges;
+        this.edgeList = edgeList;
 
         for (int v = 0; v < simpleGraph.order(); v++) {
-            degreeMap.put(v, simpleGraph.degreeOf(v));
             neighborMap.put(v, new HashSet<>(simpleGraph.neighborsOf(v)));
         }
     }
@@ -49,66 +40,35 @@ public class SimpleGraph implements Graph {
             return;
         }
 
-        adjacencyMatrix[v1][v2] = weight;
-        degreeMap.put(v1, degreeOf(v1) + 1);
-        edges.add(new Edge(v1, v2, weight));
+        edgeList.put(v1, v2, weight);
         neighborMap.get(v1).add(v2);
     }
 
     @Override
     public int addVertex() {
-        int v = order();
-        int[][] matrix = new int[v + 1][v + 1];
-
-        for (Edge edge : edges) {
-            matrix[edge.v1][edge.v2] = edge.weight;
-        }
-        adjacencyMatrix = matrix;
-        degreeMap.put(v, 0);
-        neighborMap.put(v, new HashSet<>());
-
-        return v;
+        neighborMap.put(order(), new HashSet<>());
+        return order() - 1;
     }
 
     @Override
     public void addVertex(int v) {
-        int[][] adjacencyMatrix = new int[order() + 1][order() + 1];
-        HashMap<Integer, Integer> degreeMap = new HashMap<>();
-        HashSet<Edge> edges = new HashSet<>();
-        HashMap<Integer, HashSet<Integer>> neighborMap = new HashMap<>();
-        int i0 = 0;
+        addVertex();
+        HashSet<Edge> edges = new HashSet<>(size());
 
-        degreeMap.put(v, 0);
-        neighborMap.put(v, new HashSet<>());
-
-        for (int i = 0; i < order(); i++) {
-            if (i == v) {
-                i0++;
+        for (Edge edge : new HashSet<>(edgeList.keySet())) {
+            removeEdge(edge);
+            if (edge.v1 >= v) {
+                edge.v1++;
             }
-
-            int j0 = 0;
-            for (int j = 0; j < order(); j++) {
-                if (j == v) {
-                    j0++;
-                }
-
-                int tail = i + i0;
-                int head = j + j0;
-                int weight = this.adjacencyMatrix[i][j];
-                if (weight != 0) {
-                    adjacencyMatrix[tail][head] = this.adjacencyMatrix[i][j];
-                    edges.add(new Edge(tail, head, weight));
-                }
+            if (edge.v2 >= v) {
+                edge.v2++;
             }
-
-            degreeMap.put(i + i0, degreeOf(i));
-            neighborMap.put(i + i0, new HashSet<>(neighborsOf(i)));
+            edges.add(edge);
         }
 
-        this.adjacencyMatrix = adjacencyMatrix;
-        this.degreeMap = degreeMap;
-        this.edges = edges;
-        this.neighborMap = neighborMap;
+        for (Edge edge : edges) {
+            addEdge(edge);
+        }
     }
 
     @Override
@@ -121,9 +81,12 @@ public class SimpleGraph implements Graph {
         Graph graph = newInstance(order());
 
         for (int i = 0; i < order(); i++) {
-            for (int j = 0; j < order(); j++) {
-                if (i != j && getEdgeWeight(i, j) == 0) {
+            for (int j = i + 1; j < order(); j++) {
+                if (getEdgeWeight(i, j) == 0) {
                     graph.addEdge(i, j);
+                }
+                if (getEdgeWeight(j, i) == 0) {
+                    graph.addEdge(j, i);
                 }
             }
         }
@@ -133,7 +96,7 @@ public class SimpleGraph implements Graph {
 
     @Override
     public void contract(int v1, int v2) {
-        for (Edge edge : new ArrayList<>(edges)) {
+        for (Edge edge : new ArrayList<>(edgeList.keySet())) {
             if (edge.v1 == v1) {
                 int weight = getEdgeWeight(v2, edge.v2);
                 addEdge(v2, edge.v2, edge.weight + weight);
@@ -152,7 +115,7 @@ public class SimpleGraph implements Graph {
             return -1;
         }
 
-        return degreeMap.get(v);
+        return neighborsOf(v).size();
     }
 
     @Override
@@ -168,7 +131,7 @@ public class SimpleGraph implements Graph {
                 return false;
             }
 
-            return Arrays.deepEquals(adjacencyMatrix, that.getAdjacencyMatrix());
+            return edgeList.equals(that.edgeList);
         } else {
             return false;
         }
@@ -176,6 +139,12 @@ public class SimpleGraph implements Graph {
 
     @Override
     public int[][] getAdjacencyMatrix() {
+        int[][] adjacencyMatrix = new int[order()][order()];
+
+        for (Edge edge : edgeList.keySet()) {
+            adjacencyMatrix[edge.v1][edge.v2] = edgeList.get(edge);
+        }
+
         return adjacencyMatrix;
     }
 
@@ -209,8 +178,8 @@ public class SimpleGraph implements Graph {
     }
 
     @Override
-    public HashSet<Edge> getEdges() {
-        return edges;
+    public Set<Edge> getEdges() {
+        return edgeList.keySet();
     }
 
     @Override
@@ -219,7 +188,7 @@ public class SimpleGraph implements Graph {
             return 0;
         }
 
-        return adjacencyMatrix[v1][v2];
+        return edgeList.get(v1, v2);
     }
 
     @Override
@@ -299,7 +268,7 @@ public class SimpleGraph implements Graph {
         int newOrder = Math.min(order(), graph.order());
         Graph newGraph = newInstance(newOrder);
 
-        for (Edge edge : edges) {
+        for (Edge edge : edgeList.keySet()) {
             if (graph.hasEdge(edge)) {
                 newGraph.addEdge(edge);
             }
@@ -357,7 +326,7 @@ public class SimpleGraph implements Graph {
     @Override
     public boolean isEdgeDisjoint(Graph graph) {
         for (Edge edge : graph.getEdges()) {
-            if (edges.contains(edge)) {
+            if (edgeList.containsKey(edge)) {
                 return false;
             }
         }
@@ -367,7 +336,7 @@ public class SimpleGraph implements Graph {
 
     @Override
     public boolean isEmpty() {
-        return edges.isEmpty();
+        return edgeList.isEmpty();
     }
 
     @Override
@@ -458,7 +427,7 @@ public class SimpleGraph implements Graph {
 
     @Override
     public int order() {
-        return adjacencyMatrix.length;
+        return neighborMap.size();
     }
 
     @Override
@@ -467,9 +436,7 @@ public class SimpleGraph implements Graph {
             return;
         }
 
-        adjacencyMatrix[v1][v2] = 0;
-        degreeMap.put(v1, degreeOf(v1) - 1);
-        edges.remove(new Edge(v1, v2));
+        edgeList.remove(v1, v2);
         neighborMap.get(v1).remove(v2);
     }
 
@@ -479,31 +446,31 @@ public class SimpleGraph implements Graph {
             return;
         }
 
-        SimpleGraph simpleGraph = new SimpleGraph(order() - 1);
+        SimpleGraph graph = (SimpleGraph) newInstance(order() - 1);
         for (Edge edge : getEdges()) {
             if (edge.v1 != v && edge.v2 != v) {
                 int i0 = edge.v1 < v ? edge.v1 : edge.v1 - 1;
                 int j0 = edge.v2 < v ? edge.v2 : edge.v2 - 1;
-                simpleGraph.addEdge(i0, j0, getEdgeWeight(edge));
+                graph.addEdge(i0, j0, getEdgeWeight(edge));
             }
         }
 
-        adjacencyMatrix = simpleGraph.adjacencyMatrix;
-        degreeMap = simpleGraph.degreeMap;
-        edges = simpleGraph.edges;
-        neighborMap = simpleGraph.neighborMap;
+        edgeList = graph.edgeList;
+        neighborMap = graph.neighborMap;
     }
 
     @Override
     public int size() {
-        return edges.size();
+        return edgeList.size();
     }
 
     @Override
     public void swap(int v1, int v2) {
-        int[][] adjacencyMatrix = new int[order()][order()];
+        EdgeList edgeList = new EdgeList();
 
-        for (Edge edge : edges) {
+        for (Edge edge : new HashSet<>(this.edgeList.keySet())) {
+            removeEdge(edge);
+
             if (edge.v1 == v1) {
                 edge.v1 = v2;
             } else if (edge.v1 == v2) {
@@ -515,24 +482,19 @@ public class SimpleGraph implements Graph {
                 edge.v2 = v1;
             }
 
-            adjacencyMatrix[edge.v1][edge.v2] = edge.weight;
+            edgeList.put(edge, edge.weight);
         }
-        this.adjacencyMatrix = adjacencyMatrix;
 
-        int degreeOfV1 = degreeOf(v1);
-        degreeMap.put(v1, degreeOf(v2));
-        degreeMap.put(v2, degreeOfV1);
-
-        HashSet<Integer> neighborsOfV1 = neighborsOf(v1);
-        neighborMap.put(v1, neighborsOf(v2));
-        neighborMap.put(v2, neighborsOfV1);
+        for (Edge edge : new HashSet<>(edgeList.keySet())) {
+            addEdge(edge);
+        }
     }
 
     @Override
     public Graph transpose() {
         Graph graph = newInstance(order());
 
-        for (Edge edge : edges) {
+        for (Edge edge : edgeList.keySet()) {
             graph.addEdge(edge.getReverse());
         }
 
@@ -544,7 +506,7 @@ public class SimpleGraph implements Graph {
         HashSet<Edge> unionEdges = new HashSet<>();
         HashSet<Integer> unionVertices = new HashSet<>();
 
-        for (Edge edge : edges) {
+        for (Edge edge : edgeList.keySet()) {
             unionEdges.add(edge);
             unionVertices.add(edge.v1);
             unionVertices.add(edge.v2);
@@ -594,7 +556,7 @@ public class SimpleGraph implements Graph {
             case SIMPLE: return clone();
             case UNDIRECTED:
                 UndirectedGraph graph = new UndirectedGraph(order());
-                for (Edge edge : edges) {
+                for (Edge edge : edgeList.keySet()) {
                     graph.addEdge(edge);
                 }
                 return graph;
@@ -610,7 +572,7 @@ public class SimpleGraph implements Graph {
      * @return True if this graph is a strict subgraph of the specified graph, false otherwise.
      */
     public boolean isStrictSubgraphOf(Graph graph) {
-        for (Edge edge : edges) {
+        for (Edge edge : edgeList.keySet()) {
             if (!graph.hasEdge(edge)) {
                 return false;
             }

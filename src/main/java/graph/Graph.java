@@ -172,7 +172,12 @@ public interface Graph {
      * Calculates the shortest distance between two vertices.
      */
     default int distance(int v1, int v2) {
-        return Distance.dijkstra(this, v1, v2);
+        Integer distance = Distance.dijkstra(this, v1, v2);
+        if (distance == null) {
+            return -1;
+        }
+
+        return distance;
     }
 
     /**
@@ -198,7 +203,7 @@ public interface Graph {
     /**
      * Returns the set of edges in the graph.
      */
-    HashSet<Edge> getEdges();
+    Set<Edge> getEdges();
 
     /**
      * Returns the weight of a specified edge.

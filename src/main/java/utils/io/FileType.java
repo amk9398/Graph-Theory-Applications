@@ -4,10 +4,7 @@ import main.java.graph.Graph;
 import main.java.graph.GraphType;
 import main.java.utils.structures.Edge;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.*;
 
 public enum FileType {
     ADJACENCY_LIST {
@@ -146,7 +143,7 @@ public enum FileType {
         }
 
         public String toString(Graph graph) {
-            HashSet<Edge> edges = graph.getEdges();
+            Set<Edge> edges = graph.getEdges();
             StringBuilder builder = new StringBuilder();
             builder.append(graph.order());
 
